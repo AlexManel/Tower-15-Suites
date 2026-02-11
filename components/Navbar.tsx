@@ -40,7 +40,7 @@ const Navbar: React.FC<NavbarProps> = ({ properties, onPropertySelect, onHomeCli
               T15
             </div>
             <div className="flex flex-col leading-none">
-              <span className={`text-xl font-serif tracking-tight transition-colors duration-500 ${scrolled ? 'text-stone-900' : 'text-white'}`}>TOWER 15</span>
+              <span className={`text-xl font-serif tracking-tight transition-colors duration-500 ${scrolled ? 'text-stone-900' : 'text-white'}`}>Tower 15 Suites</span>
               <span className={`text-[10px] font-sans font-medium tracking-[0.4em] uppercase mt-1 transition-colors duration-500 ${scrolled ? 'text-gold-600' : 'text-stone-300'}`}>Suites</span>
             </div>
           </div>
