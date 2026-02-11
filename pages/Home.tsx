@@ -25,7 +25,7 @@ const Home: React.FC<HomeProps> = ({ properties, onPropertySelect }) => {
           <img 
             src="/images/tower15-exterior-night.jpg" 
             className="w-full h-full object-cover opacity-60 scale-105 animate-pulse-slow" 
-            alt="Tower 15 Building"
+            alt="Tower 15 Suites Building"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-stone-900"></div>
         </div>
@@ -164,7 +164,7 @@ const Home: React.FC<HomeProps> = ({ properties, onPropertySelect }) => {
                     scrolling="no" 
                     marginHeight={0} 
                     marginWidth={0}
-                    title="Tower 15 Location"
+                    title="Tower 15 Suites Location"
                     className="w-full h-full"
                   ></iframe>
               </div>
