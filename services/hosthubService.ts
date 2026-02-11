@@ -9,7 +9,6 @@ import { cmsService } from './cmsService';
  */
 
 // Χρήση ενός δημόσιου CORS proxy για το demo/launch αν δεν υπάρχει backend
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"; 
 const HOSTHUB_BASE_URL = 'https://api.hosthub.com/v1';
 
 export const hosthubService = {
