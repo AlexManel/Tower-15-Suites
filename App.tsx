@@ -5,11 +5,11 @@ import Home from './pages/Home';
 import PropertyDetail from './pages/PropertyDetail';
 import Admin from './pages/Admin';
 import Checkout from './pages/Checkout';
-import InfoPage from './pages/infoPage';
+import InfoPage from './pages/InfoPage';
 import AiAssistant from './components/AiAssistant'; // Now serving as Guest Concierge
 import { Property, CMSState } from './types';
 import { cmsService } from './services/cmsService';
-import { ShieldCheck, Instagram, Facebook, Loader2 } from 'lucide-react';
+import { ShieldCheck, Instagram, Facebook } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 // Content Helper
