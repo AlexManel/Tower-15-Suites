@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { MessageSquare, X, Send, Loader2, Sparkles, User, Bot } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, User, Bot } from 'lucide-react';
 import { Property } from '../types';
 import { aiService } from '../services/aiService';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AiAssistantProps {
   properties: Property[];
@@ -15,14 +16,19 @@ interface Message {
 }
 
 const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
+  const { language } = useLanguage();
   const [isOpen, setIsOpen] = React.useState(false);
   const [input, setInput] = React.useState('');
   const [isTyping, setIsTyping] = React.useState(false);
+
+  // Initialize welcome message based on current language
   const [messages, setMessages] = React.useState<Message[]>([
     { 
       id: 'welcome', 
       role: 'ai', 
-      text: 'Hello! I am the TOWER 15 Concierge. How can I assist you with your stay in Thessaloniki today? \n\nΓεια σας! Είμαι ο Concierge του TOWER 15. Πώς μπορώ να σας βοηθήσω;' 
+      text: language === 'el' 
+        ? 'Γεια σας! Είμαι ο ψηφιακός Concierge του TOWER 15. Πώς μπορώ να σας βοηθήσω με τη διαμονή σας στη Θεσσαλονίκη;\n\n(I speak English too! Just ask.)'
+        : 'Hello! I am the TOWER 15 Concierge. How can I assist you with your stay in Thessaloniki?' 
     }
   ]);
 
@@ -36,6 +42,19 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
     scrollToBottom();
   }, [messages, isOpen]);
 
+  // If language changes and chat is still at initial state, update the greeting
+  React.useEffect(() => {
+    if (messages.length === 1 && messages[0].id === 'welcome') {
+      setMessages([{
+        id: 'welcome',
+        role: 'ai',
+        text: language === 'el' 
+          ? 'Γεια σας! Είμαι ο ψηφιακός Concierge του TOWER 15. Πώς μπορώ να σας βοηθήσω με τη διαμονή σας στη Θεσσαλονίκη;\n\n(I speak English too! Just ask.)'
+          : 'Hello! I am the TOWER 15 Concierge. How can I assist you with your stay in Thessaloniki?'
+      }]);
+    }
+  }, [language]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -46,7 +65,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
     setIsTyping(true);
 
     try {
-      // Prepare history for AI service (exclude welcome message to keep context clean or include if needed)
+      // Prepare history for AI service
       const history = messages.slice(1).map(m => ({ role: m.role === 'user' ? 'user' : 'model', text: m.text }));
       
       const responseText = await aiService.askConcierge(properties, userMsg.text, history);
@@ -54,11 +73,33 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
       const aiMsg: Message = { id: (Date.now() + 1).toString(), role: 'ai', text: responseText };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'ai', text: "I'm having trouble connecting to the network. Please try again." }]);
+      setMessages(prev => [...prev, { 
+        id: Date.now().toString(), 
+        role: 'ai', 
+        text: language === 'el' 
+          ? "Υπάρχει πρόβλημα σύνδεσης. Παρακαλώ δοκιμάστε ξανά." 
+          : "I'm having trouble connecting to the network. Please try again." 
+      }]);
     } finally {
       setIsTyping(false);
     }
   };
+
+  // Localized UI Texts
+  const texts = {
+    el: {
+      label: "Concierge",
+      placeholder: "Ρωτήστε για δωμάτια, τιμές ή τοποθεσία...",
+      headerSub: "Tower 15 Suites"
+    },
+    en: {
+      label: "Concierge",
+      placeholder: "Ask about rooms, prices, or location...",
+      headerSub: "Tower 15 Suites"
+    }
+  };
+
+  const t = texts[language];
 
   if (!isOpen) {
     return (
@@ -71,7 +112,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
           <MessageSquare size={24} className="fill-current" />
         </div>
         <div className="absolute right-full mr-4 bg-white text-stone-900 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-stone-100">
-           Concierge
+           {t.label}
         </div>
       </button>
     );
@@ -89,7 +130,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
              </div>
              <div>
                <h3 className="font-serif italic text-lg leading-none text-gold-400">Concierge</h3>
-               <span className="text-[10px] uppercase tracking-widest text-stone-400">Tower 15 Suites</span>
+               <span className="text-[10px] uppercase tracking-widest text-stone-400">{t.headerSub}</span>
              </div>
           </div>
           <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-2 rounded-full transition-colors text-stone-400 hover:text-white">
@@ -140,7 +181,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="w-full p-4 pr-12 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder:text-stone-400 focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none transition-all text-sm"
-              placeholder="Ask about rooms, prices, or location..."
+              placeholder={t.placeholder}
             />
             <button 
               type="submit"
