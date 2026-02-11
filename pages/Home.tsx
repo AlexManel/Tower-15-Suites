@@ -2,7 +2,7 @@
 import React from 'react';
 import { Property } from '../types';
 import PropertyCard from '../components/PropertyCard';
-import { MapPin, Compass, Building, ArrowDown, ArrowRight, Navigation, Star } from 'lucide-react';
+import { ArrowDown, ArrowRight, Star } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HomeProps {
