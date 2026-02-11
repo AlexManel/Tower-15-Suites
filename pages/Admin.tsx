@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CMSState, Property, BookingStatus, RealBooking } from '../types';
+import { CMSState, Property, RealBooking } from '../types';
 import { cmsService } from '../services/cmsService';
 import { aiService } from '../services/aiService';
 import { 
@@ -19,19 +19,9 @@ import {
   LogOut,
   SlidersHorizontal,
   CreditCard,
-  Building2,
   FileText,
   Zap,
-  ArrowUpRight,
-  ExternalLink,
-  ShieldCheck,
-  Key,
   Image as ImageIcon,
-  Users,
-  BedDouble,
-  Bath,
-  MapPin,
-  ListChecks,
   Scale,
   Upload,
   Loader2,
@@ -43,8 +33,7 @@ import {
   Lock,
   Calendar as CalendarIcon,
   ChevronLeft,
-  User,
-  MessageSquare
+  User
 } from 'lucide-react';
 
 interface AdminProps {
