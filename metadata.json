@@ -1,0 +1,7 @@
+{
+  "name": "Tower 15 Suites",
+  "description": "A production-grade direct booking platform for hospitality brands, featuring real-time Hosthub synchronization, Stripe payment processing, and a robust admin CMS for managing 17 premium properties.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
