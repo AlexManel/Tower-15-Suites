@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Users, BedDouble, Bath, ArrowRight } from 'lucide-react';
+import { Users, BedDouble, ArrowRight } from 'lucide-react';
 import { Property } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
