@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import PropertyDetail from './pages/PropertyDetail';
 import Admin from './pages/Admin';
 import Checkout from './pages/Checkout';
-import infoPage from './pages/infoPage';
+import InfoPage from './pages/InfoPage';
 import AiAssistant from './components/AiAssistant'; // Now serving as Guest Concierge
 import { Property, CMSState } from './types';
 import { cmsService } from './services/cmsService';
@@ -98,7 +98,7 @@ const InnerApp: React.FC = () => {
   const [view, setView] = React.useState<ViewState>('home');
   const [selectedProperty, setSelectedProperty] = React.useState<Property | null>(null);
   const [bookingData, setBookingData] = React.useState<any>(null);
-  const [infoPageKey, setinfoPageKey] = React.useState<string | null>(null);
+  const [infoPageKey, setInfoPageKey] = React.useState<string | null>(null);
   
   const [cmsState, setCmsState] = React.useState<CMSState>({
     properties: [],
@@ -165,7 +165,7 @@ const InnerApp: React.FC = () => {
   };
 
   const handleInfoClick = (key: string) => {
-    setinfoPageKey(key);
+    setInfoPageKey(key);
     setView('info');
     window.scrollTo(0, 0);
   };
@@ -226,7 +226,7 @@ const InnerApp: React.FC = () => {
       )}
 
       {view === 'info' && infoContent && (
-        <infoPage 
+        <InfoPage 
           title={infoContent.title}
           subtitle={infoContent.subtitle}
           content={infoContent.content}
