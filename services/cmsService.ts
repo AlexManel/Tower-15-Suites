@@ -79,7 +79,7 @@ export const cmsService = {
       }
 
       // 2. Load Settings
-      const { data: settingsData, error: settingsError } = await supabase
+      const { data: settingsData } = await supabase
         .from('settings')
         .select('*')
         .single();
