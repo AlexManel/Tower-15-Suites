@@ -11,7 +11,7 @@ interface NavbarProps {
   onHomeClick: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ brandName, properties, onPropertySelect, onHomeClick }) => {
+const Navbar: React.FC<NavbarProps> = ({ properties, onPropertySelect, onHomeClick }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [showRooms, setShowRooms] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
