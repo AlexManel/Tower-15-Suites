@@ -23,9 +23,9 @@ const Home: React.FC<HomeProps> = ({ properties, onPropertySelect }) => {
       <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden bg-stone-900">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/images/tower15-exterior-night.jpg" 
+            src="https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=2070&auto=format&fit=crop" 
             className="w-full h-full object-cover opacity-60 scale-105 animate-pulse-slow" 
-            alt="Tower 15 Suites Building"
+            alt="Tower 15 Building"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-stone-900"></div>
         </div>
@@ -164,7 +164,7 @@ const Home: React.FC<HomeProps> = ({ properties, onPropertySelect }) => {
                     scrolling="no" 
                     marginHeight={0} 
                     marginWidth={0}
-                    title="Tower 15 Suites Location"
+                    title="Tower 15 Location"
                     className="w-full h-full"
                   ></iframe>
               </div>
