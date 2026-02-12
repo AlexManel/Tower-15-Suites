@@ -765,6 +765,13 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
         <NavItem id="ai" label="Magic" icon={Wand2} />
         <NavItem id="bookings" label="Bookings" icon={BookOpen} />
         <NavItem id="settings" label="Config" icon={Settings} />
+        <button 
+          onClick={onExit}
+          className="flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-all flex-1"
+        >
+          <LogOut size={20} />
+          <span className="text-[10px] font-bold uppercase tracking-tighter opacity-70">Exit</span>
+        </button>
       </nav>
     </div>
   );
