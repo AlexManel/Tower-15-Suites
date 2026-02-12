@@ -11,7 +11,7 @@ interface NavbarProps {
   onHomeClick: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ properties, onPropertySelect, onHomeClick }) => {
+const Navbar: React.FC<NavbarProps> = ({ properties, onPropertySelect, onHomeClick, brandName }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [showRooms, setShowRooms] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
@@ -34,15 +34,13 @@ const Navbar: React.FC<NavbarProps> = ({ properties, onPropertySelect, onHomeCli
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center">
           
-          {/* Brand Logo */}
-          <div className="flex-shrink-0 flex items-center cursor-pointer group" onClick={onHomeClick}>
-            <div className={`w-12 h-12 flex items-center justify-center font-serif text-2xl mr-4 border transition-all duration-500 ${scrolled ? 'border-stone-900 text-stone-900' : 'border-white text-white'}`}>
-              T15
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className={`text-xl font-serif tracking-tight transition-colors duration-500 ${scrolled ? 'text-stone-900' : 'text-white'}`}>Tower 15 Suites</span>
-              <span className={`text-[10px] font-sans font-medium tracking-[0.4em] uppercase mt-1 transition-colors duration-500 ${scrolled ? 'text-gold-600' : 'text-stone-300'}`}>Suites</span>
-            </div>
+          {/* Brand Logo - Updated to Image */}
+          <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={onHomeClick}>
+            <img 
+              src="/images/logo.png" 
+              alt={brandName}
+              className={`h-12 md:h-16 w-auto object-contain transition-all duration-500 ${scrolled ? 'invert' : ''}`}
+            />
           </div>
           
           {/* Desktop Links */}
