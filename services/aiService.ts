@@ -20,7 +20,7 @@ export const aiService = {
     
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview", 
+        model: "gemini-3-flash-preview", 
         contents: `
           You are the AI Architect for the "TOWER 15 Suites" website.
           CURRENT CMS STATE (JSON): ${JSON.stringify(lightweightState)}
