@@ -65,6 +65,7 @@ const mapPropertyToDB = (p: Property) => ({
 });
 
 // Fallback mapper for when the DB schema is old (missing _el columns and new fee columns)
+// CRITICAL FIX: Removed cleaning_fee and climate_crisis_tax to prevent crashes on old schemas
 const mapPropertyToLegacyDB = (p: Property) => ({
   id: p.id,
   hosthub_listing_id: p.hosthubListingId,
@@ -81,7 +82,6 @@ const mapPropertyToLegacyDB = (p: Property) => ({
   cancellation_policy: p.cancellationPolicy,
   location: p.location,
   price_per_night_base: p.pricePerNightBase
-  // REMOVED cleaning_fee and climate_crisis_tax to prevent crashes on old DBs
 });
 
 export const cmsService = {
@@ -143,28 +143,45 @@ export const cmsService = {
   },
 
   updateProperty: async (property: Property) => {
+    // Strategy: Try full update first. If schema mismatch, try legacy update.
+    
+    // 1. Prepare modern payload
     const dbRow = mapPropertyToDB(property);
-    
-    // Attempt full save
-    const { error } = await supabase
-      .from('properties')
-      .upsert(dbRow)
-      .eq('id', property.id);
-    
-    if (error) {
-      // If error is about missing columns, try legacy save
-      if (error.message?.includes('column') || error.code === '42703' || error.message?.includes('amenities_el') || error.message?.includes('cleaning_fee')) {
-         console.warn("Schema mismatch detected. Attempting legacy save...");
+
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .upsert(dbRow)
+        .eq('id', property.id);
+
+      if (error) throw error;
+    } catch (error: any) {
+      // Check for schema/column errors
+      if (
+        error.code === '42703' || // Undefined column
+        error.message?.includes('column') || 
+        error.message?.includes('cleaning_fee') ||
+        error.message?.includes('amenities_el') ||
+        error.message?.includes('schema')
+      ) {
+         console.warn("Schema mismatch detected (missing columns). Falling back to legacy save.");
+         
+         // 2. Prepare legacy payload (Strictly without new columns)
          const legacyRow = mapPropertyToLegacyDB(property);
+         
          const { error: legacyError } = await supabase
             .from('properties')
             .upsert(legacyRow)
             .eq('id', property.id);
             
-         if (legacyError) throw new Error(`Legacy Save Failed: ${legacyError.message}`);
-         return; // Success legacy save
+         if (legacyError) {
+           throw new Error(`Legacy Save Failed: ${legacyError.message}`);
+         }
+         return;
       }
-      throw new Error(`Αποτυχία αποθήκευσης: ${error.message}`);
+      
+      // Re-throw other errors
+      throw new Error(`Save Failed: ${error.message}`);
     }
   },
 
