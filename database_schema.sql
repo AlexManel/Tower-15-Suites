@@ -4,7 +4,7 @@
 
 -- 1. ΠΙΝΑΚΑΣ ΑΚΙΝΗΤΩΝ (PROPERTIES)
 -- Αποθηκεύει όλα τα δεδομένα των δωματίων
-CREATE TABLE public.properties (
+CREATE TABLE IF NOT EXISTS public.properties (
     id text PRIMARY KEY, -- Χρησιμοποιούμε text για να κρατήσουμε τα IDs τύπου "t15-01"
     hosthub_listing_id text,
     title text NOT NULL,
@@ -48,7 +48,7 @@ ON public.properties FOR UPDATE
 USING (true);
 
 -- 2. ΠΙΝΑΚΑΣ ΚΡΑΤΗΣΕΩΝ (BOOKINGS)
-CREATE TABLE public.bookings (
+CREATE TABLE IF NOT EXISTS public.bookings (
     id text PRIMARY KEY,
     property_id text REFERENCES public.properties(id),
     property_name text,
@@ -72,7 +72,7 @@ ON public.bookings FOR SELECT
 USING (true);
 
 -- 3. ΠΙΝΑΚΑΣ ΡΥΘΜΙΣΕΩΝ (SETTINGS)
-CREATE TABLE public.settings (
+CREATE TABLE IF NOT EXISTS public.settings (
     id integer PRIMARY KEY DEFAULT 1,
     brand_name text DEFAULT 'TOWER 15 Suites',
     stripe_public_key text,
@@ -94,11 +94,14 @@ CREATE POLICY "Enable access to all users"
 ON public.settings FOR ALL 
 USING (true);
 
--- UPDATE EXISTING TABLE IF EXISTS (MIGRATION)
--- If you already ran the old schema, run these to add the missing columns:
--- ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS title_el text;
--- ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS category_el text;
--- ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS description_el text;
--- ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS short_description_el text;
--- ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS amenities_el text[];
+-- MIGRATION COMMANDS (Run these to fix "Legacy Save Failed" errors)
+-- Ensure all missing columns are added if they don't exist
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS cleaning_fee integer DEFAULT 30;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS climate_crisis_tax decimal(10,2) DEFAULT 1.5;
 
+-- Localization Columns
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS title_el text;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS category_el text;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS description_el text;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS short_description_el text;
+ALTER TABLE public.properties ADD COLUMN IF NOT EXISTS amenities_el text[];
