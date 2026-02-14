@@ -694,7 +694,7 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
              <div className="max-w-5xl mx-auto p-6 md:p-12 pb-32">
                 <div className="flex justify-between items-center mb-12 sticky top-0 bg-white/90 backdrop-blur-md py-4 z-10 border-b border-slate-100">
                    <button onClick={() => setEditingProp(null)} className="text-slate-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2"><X size={18} /> Cancel</button>
-                   <button onClick={handleSaveProperty} disabled={isSaving} className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center gap-2 shadow-2xl hover:bg-slate-800 transition-all disabled:opacity-50">
+                   <button onClick={handleSaveProperty} disabled={isSaving || isUploading} className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center gap-2 shadow-2xl hover:bg-slate-800 transition-all disabled:opacity-50">
                      {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} Save Residence
                    </button>
                 </div>
