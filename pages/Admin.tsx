@@ -138,7 +138,7 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
   };
 
   const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = (e) => {
@@ -165,30 +165,37 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+          if (!ctx) {
+            reject(new Error("Canvas context error"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
           
           resolve(canvas.toDataURL('image/jpeg', 0.7));
         };
+        img.onerror = (err) => reject(err);
       };
+      reader.onerror = (err) => reject(err);
     });
   };
 
   const processFiles = async (files: FileList) => {
-    if (!editingProp) return;
     setIsUploading(true);
-    const newImages: string[] = [];
     
     try {
-      for (let i = 0; i < files.length; i++) {
-        const base64 = await compressImage(files[i]);
-        newImages.push(base64);
-      }
-      setEditingProp({ ...editingProp, images: [...editingProp.images, ...newImages] });
+      const promises = Array.from(files).map(file => compressImage(file));
+      const newImages = await Promise.all(promises);
+      
+      setEditingProp(prev => {
+        if (!prev) return null;
+        return { ...prev, images: [...prev.images, ...newImages] };
+      });
     } catch (error) {
       console.error("Image processing error", error);
-      alert("Σφάλμα κατά την επεξεργασία της εικόνας.");
+      alert("Error processing images.");
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -275,6 +282,20 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pb-24 md:pb-0 md:pl-72 relative">
+      {/* Mobile Header with Exit Button */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-[60] flex items-center justify-between px-6">
+        <div className="flex items-center gap-2">
+           <div className="w-8 h-8 bg-slate-900 text-white rounded flex items-center justify-center font-serif text-sm">T15</div>
+           <span className="text-xs font-bold uppercase tracking-widest text-slate-900">Admin Panel</span>
+        </div>
+        <button 
+          onClick={onExit}
+          className="flex items-center gap-2 px-3 py-2 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-rose-100 transition-colors"
+        >
+          <LogOut size={14} /> Exit
+        </button>
+      </header>
+
       <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-72 bg-white border-r border-slate-200 p-8 flex-col gap-2 shrink-0 z-50">
         <div className="px-4 py-2 mb-10 flex items-center gap-2">
            <div className="w-8 h-8 bg-slate-900 text-white rounded flex items-center justify-center font-serif text-sm">T15</div>
@@ -703,15 +724,21 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
                       <section className="space-y-6">
                         <h3 className="text-xl font-bold border-b border-slate-100 pb-4 flex items-center gap-3"><ImageIcon size={20} /> Photos</h3>
                         <input type="file" ref={fileInputRef} className="hidden" multiple accept="image/*" onChange={handleFileChange} />
-                        <button onClick={() => fileInputRef.current?.click()} className="w-full py-12 border-2 border-dashed border-slate-200 rounded-[2rem] text-slate-400 flex flex-col items-center gap-3 hover:border-slate-900 hover:text-slate-900 transition-all">
-                           {isUploading ? <Loader2 size={32} className="animate-spin" /> : <Upload size={32} />}
+                        <button onClick={() => fileInputRef.current?.click()} className="w-full py-12 border-2 border-dashed border-slate-200 rounded-[2rem] text-slate-400 flex flex-col items-center gap-3 hover:border-slate-900 hover:text-slate-900 transition-all group">
+                           {isUploading ? <Loader2 size={32} className="animate-spin" /> : <Upload size={32} className="group-hover:scale-110 transition-transform" />}
                            <p className="font-bold text-xs uppercase tracking-widest">Upload local images</p>
                         </button>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                            {editingProp.images.map((img, idx) => (
-                              <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border border-slate-100">
-                                 <img src={img} className="w-full h-full object-cover" />
-                                 <button onClick={() => setEditingProp({...editingProp, images: editingProp.images.filter((_, i) => i !== idx)})} className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12}/></button>
+                              <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden group border border-slate-100 bg-slate-50">
+                                 <img src={img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                 <button 
+                                   onClick={() => setEditingProp(prev => prev ? ({...prev, images: prev.images.filter((_, i) => i !== idx)}) : null)} 
+                                   className="absolute top-2 right-2 p-2 bg-white/90 text-rose-500 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-rose-500 hover:text-white"
+                                   title="Remove Image"
+                                 >
+                                    <Trash2 size={14}/>
+                                 </button>
                               </div>
                            ))}
                         </div>
@@ -765,13 +792,6 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
         <NavItem id="ai" label="Magic" icon={Wand2} />
         <NavItem id="bookings" label="Bookings" icon={BookOpen} />
         <NavItem id="settings" label="Config" icon={Settings} />
-        <button 
-          onClick={onExit}
-          className="flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-all flex-1"
-        >
-          <LogOut size={20} />
-          <span className="text-[10px] font-bold uppercase tracking-tighter opacity-70">Exit</span>
-        </button>
       </nav>
     </div>
   );
