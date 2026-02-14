@@ -134,7 +134,7 @@ export const cmsService = {
     // 1. Try Modern Save
     try {
       const dbRow = mapPropertyToDB(property);
-      // Removed .eq('id', property.id) because upsert works on the primary key in the body
+      // FIXED: Removed .eq('id', property.id) because upsert works on the primary key in the body
       const { error } = await supabase
         .from('properties')
         .upsert(dbRow);
