@@ -134,10 +134,10 @@ export const cmsService = {
     // 1. Try Modern Save
     try {
       const dbRow = mapPropertyToDB(property);
+      // Removed .eq('id', property.id) because upsert works on the primary key in the body
       const { error } = await supabase
         .from('properties')
-        .upsert(dbRow)
-        .eq('id', property.id);
+        .upsert(dbRow);
 
       if (error) throw error;
       return; // Success
@@ -147,7 +147,9 @@ export const cmsService = {
                            error.message?.includes('column') || 
                            error.message?.includes('cleaning_fee') ||
                            error.message?.includes('amenities_el') ||
-                           error.message?.includes('schema');
+                           error.message?.includes('schema') ||
+                           error.code === 'PGRST100' || // PostgREST error
+                           error.message?.includes('Bad Request'); // 400
 
       if (isSchemaError) {
          console.warn(`Schema mismatch for ${property.id}. Attempting raw REST fallback to bypass client cache.`);
@@ -163,6 +165,7 @@ export const cmsService = {
          }
          
          // Try PATCH first (Update)
+         // Note: We use the ID in the URL to target the row.
          let response = await fetch(`${SUPABASE_URL}/rest/v1/properties?id=eq.${property.id}`, {
             method: 'PATCH',
             headers: {
@@ -176,9 +179,7 @@ export const cmsService = {
 
          // If PATCH fails (e.g. 404 Not Found implies new record), try POST (Insert)
          if (!response.ok) {
-            // Note: 404 from PostgREST usually means the route is wrong, but [] means no rows updated.
-            // If the PATCH returned 204 or 200, it's fine. If 4xx, we might need to insert.
-            // However, upsert logic via REST is usually POST with Prefer: resolution=merge-duplicates
+            console.log(`PATCH failed with ${response.status}. Trying POST (Upsert)...`);
             
             response = await fetch(`${SUPABASE_URL}/rest/v1/properties`, {
                 method: 'POST',
