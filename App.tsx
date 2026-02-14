@@ -16,7 +16,7 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 const getInfoContent = (language: 'en' | 'el', t: any) => ({
   story: {
     title: t('story'),
-    subtitle: language === 'el' ? "Ιδρυση 2025" : "Est. 2025",
+    subtitle: language === 'el' ? "Ιδρυση 2024" : "Est. 2024",
     content: language === 'el' ? (
       <>
         <p className="mb-6 first-letter:text-5xl first-letter:font-serif first-letter:text-gold-600 first-letter:float-left first-letter:mr-3">
@@ -25,7 +25,7 @@ const getInfoContent = (language: 'en' | 'el', t: any) => ({
           της εξελισσόμενης ταυτότητας της πόλης—γεφυρώνοντας το χάσμα μεταξύ του πλούσιου παρελθόντος και του κοσμοπολίτικου μέλλοντος.
         </p>
         <p className="mb-6">
-          Το 2025, προχωρήσαμε σε πλήρη ανακαίνιση του ακινήτου. Το όραμά μας ήταν απλό αλλά φιλόδοξο:
+          Το 2024, προχωρήσαμε σε πλήρη ανακαίνιση του ακινήτου. Το όραμά μας ήταν απλό αλλά φιλόδοξο:
           να δημιουργήσουμε ένα καταφύγιο μινιμαλιστικής πολυτέλειας για τον σύγχρονο ταξιδιώτη. Απογυμνώσαμε το κτίριο
           στον δομικό του πυρήνα και επανασχεδιάσαμε κάθε τετραγωνικό μέτρο, χρησιμοποιώντας υλικά υψηλής ποιότητας.
         </p>
@@ -38,7 +38,7 @@ const getInfoContent = (language: 'en' | 'el', t: any) => ({
           to the city's evolving identity—bridging the gap between its rich past and its cosmopolitan future.
         </p>
         <p className="mb-6">
-          In 2025, we undertook a complete renovation of the property. Our vision was simple yet ambitious: 
+          In 2024, we undertook a complete renovation of the property. Our vision was simple yet ambitious: 
           to create a sanctuary of minimalist luxury that caters to the modern traveler.
         </p>
       </>
@@ -185,7 +185,7 @@ const InnerApp: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center space-y-6">
-          <div className="w-20 h-20 border border-stone-900 text-stone-900 flex items-center justify-center font-serif text-3xl mx-auto animate-pulse">T15</div>
+          <img src="/secondary_logo-beige_pdf_page-0001-removebg-preview.png" alt="TOWER 15" className="h-32 w-auto mx-auto animate-pulse object-contain" />
           <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.4em]">Curating Experiences...</p>
         </div>
       </div>
@@ -253,7 +253,7 @@ const InnerApp: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-20">
               <div className="col-span-1 md:col-span-2">
                 <div className="flex items-center mb-12 select-none cursor-default group" onClick={handleLogoSecretClick}>
-                  <div className="w-16 h-16 border border-white/20 text-white flex items-center justify-center font-serif text-2xl mr-6 group-hover:border-gold-500 group-hover:text-gold-500 transition-colors duration-500">T15</div>
+                  <img src="/secondary_logo-beige_pdf_page-0001-removebg-preview.png" alt="TOWER 15" className="h-20 w-auto mr-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500 object-contain" />
                   <div>
                      <h3 className="text-white text-3xl font-serif tracking-tight">{cmsState.brandName}</h3>
                      <p className="text-gold-600 text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Hospitality Collection</p>
@@ -297,7 +297,7 @@ const InnerApp: React.FC = () => {
             </div>
             
             <div className="mt-32 pt-12 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.3em] text-stone-600">
-              <p>© {new Date().getFullYear()} {cmsState.brandName}. EST. 2025</p>
+              <p>© {new Date().getFullYear()} {cmsState.brandName}. EST. 2024</p>
               <div className="flex items-center gap-8">
                 <span className="flex items-center gap-2"><ShieldCheck size={14} /> PCI Level 1 Compliant</span>
                 <span className="flex items-center gap-2">Secure Transactions</span>
