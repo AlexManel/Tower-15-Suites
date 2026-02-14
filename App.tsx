@@ -253,7 +253,7 @@ const InnerApp: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-20">
               <div className="col-span-1 md:col-span-2">
                 <div className="flex items-center mb-12 select-none cursor-default group" onClick={handleLogoSecretClick}>
-                  <img src="/secondary_logo-beige_pdf_page-0001-removebg-preview.png" alt="TOWER 15" className="h-20 w-auto mr-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500 object-contain" />
+                  <img src="/loading_logo.png" alt="Tower 15 Suites" className="h-20 w-auto mr-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500 object-contain" />
                   <div>
                      <h3 className="text-white text-3xl font-serif tracking-tight">{cmsState.brandName}</h3>
                      <p className="text-gold-600 text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Hospitality Collection</p>
