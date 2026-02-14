@@ -34,13 +34,17 @@ const Navbar: React.FC<NavbarProps> = ({ properties, onPropertySelect, onHomeCli
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center">
           
-          {/* Brand Logo - Updated to Image */}
-          <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={onHomeClick}>
+          {/* Brand Logo - Image Based */}
+          <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer group" onClick={onHomeClick}>
             <img 
-              src="/images/logo.png" 
-              alt={brandName}
-              className={`h-12 md:h-16 w-auto object-contain transition-all duration-500 ${scrolled ? 'invert' : ''}`}
+              src="/secondary_logo-beige_pdf_page-0001-removebg-preview.png" 
+              alt="TOWER 15" 
+              className={`h-12 w-auto object-contain transition-all duration-500 ${scrolled ? 'brightness-0' : ''}`} 
             />
+            <div className={`flex flex-col ${scrolled ? 'text-stone-900' : 'text-white'}`}>
+              <span className="font-serif text-lg leading-none tracking-tight">{brandName}</span>
+              <span className={`text-[9px] font-bold uppercase tracking-[0.2em] opacity-60 ${scrolled ? 'text-stone-500' : 'text-white'}`}>Suites</span>
+            </div>
           </div>
           
           {/* Desktop Links */}
