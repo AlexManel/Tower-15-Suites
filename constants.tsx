@@ -42,8 +42,46 @@ const T15_RULES = [
 const SHARED_DESC = "The Tower 15 Suites is a gem in the heart of Thessaloniki, next to Democracy Square. Fully renovated in 2024 with luxury materials and modern aesthetics.";
 const SHARED_DESC_EL = "Το Tower 15 Suites είναι ένα διαμάντι στην καρδιά της Θεσσαλονίκης, δίπλα στην Πλατεία Δημοκρατίας. Πλήρως ανακαινισμένο το 2024 με πολυτελή υλικά και σύγχρονη αισθητική.";
 
-// Helper to generate image paths based on ID (placeholders or real structure)
-const getImages = (id: string) => [`/images/room-${id}-main.jpg`, `/images/room-${id}-bath.jpg`, `/images/room-${id}-view.jpg`];
+// High-quality Unsplash IDs for "Luxury Apartment" vibe
+const UNSPLASH_ROOMS = [
+  "photo-1502672260266-1c1ef2d93688",
+  "photo-1522708323590-d24dbb6b0267",
+  "photo-1560448204-e02f11c3d0e2",
+  "photo-1493809842364-78817add7ffb",
+  "photo-1484154218962-a1c002085d2f",
+  "photo-1554995207-c18c203602cb",
+  "photo-1595526114035-0d45ed16cfbf",
+  "photo-1505693314120-0d443867891c"
+];
+
+const UNSPLASH_BATHS = [
+  "photo-1584622050111-993a426fbf0a",
+  "photo-1552321554-5fefe8c9ef14",
+  "photo-1600566752355-35792bedcfe1",
+  "photo-1564540586256-6c613c3a9922"
+];
+
+const UNSPLASH_VIEWS = [
+  "photo-1512918760383-eda306a466bc",
+  "photo-1477959858617-67f85cf4f1df",
+  "photo-1449824913935-59a10b8d2000"
+];
+
+// Deterministic image generator based on ID
+export const getImages = (id: string) => {
+  // Simple hash of the ID to select consistent images from the arrays
+  const seed = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  const roomImg = UNSPLASH_ROOMS[seed % UNSPLASH_ROOMS.length];
+  const bathImg = UNSPLASH_BATHS[seed % UNSPLASH_BATHS.length];
+  const viewImg = UNSPLASH_VIEWS[seed % UNSPLASH_VIEWS.length];
+  
+  return [
+    `https://images.unsplash.com/${roomImg}?auto=format&fit=crop&w=1200&q=80`,
+    `https://images.unsplash.com/${bathImg}?auto=format&fit=crop&w=1200&q=80`,
+    `https://images.unsplash.com/${viewImg}?auto=format&fit=crop&w=1200&q=80`
+  ];
+};
 
 export const INITIAL_PROPERTIES: Property[] = [
   // Ground Floor / Mezzanine
