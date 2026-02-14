@@ -1,33 +1,43 @@
 
 import { Property, CMSState, RealBooking, BookingStatus } from '../types';
-import { INITIAL_PROPERTIES } from '../constants';
+import { INITIAL_PROPERTIES, getImages } from '../constants';
 import { supabase } from './supabase';
 
 // Helper to map DB snake_case to TS camelCase
-const mapPropertyFromDB = (row: any): Property => ({
-  id: row.id,
-  hosthubListingId: row.hosthub_listing_id || '',
-  title: row.title,
-  titleEl: row.title_el || row.title, // Fallback
-  category: row.category,
-  categoryEl: row.category_el || row.category, // Fallback
-  description: row.description || '',
-  descriptionEl: row.description_el || row.description, // Fallback
-  shortDescription: row.short_description || '',
-  shortDescriptionEl: row.short_description_el || row.short_description, // Fallback
-  images: row.images || [],
-  amenities: row.amenities || [],
-  amenitiesEl: row.amenities_el || row.amenities, // Fallback
-  capacity: row.capacity,
-  bedrooms: row.bedrooms,
-  bathrooms: row.bathrooms,
-  houseRules: row.house_rules || [],
-  cancellationPolicy: row.cancellation_policy || '',
-  location: row.location || '',
-  pricePerNightBase: row.price_per_night_base,
-  cleaningFee: row.cleaning_fee || 30, 
-  climateCrisisTax: row.climate_crisis_tax || 1.5
-});
+// Improved to handle STALE images from DB by checking if they are local paths and replacing them
+const mapPropertyFromDB = (row: any): Property => {
+  let images = row.images || [];
+  
+  // FIX: If images are local paths (from old DB seed), replace with Unsplash deterministic images
+  if (images.length === 0 || images.some((img: string) => img.startsWith('/') || img.includes('localhost'))) {
+    images = getImages(row.id);
+  }
+
+  return {
+    id: row.id,
+    hosthubListingId: row.hosthub_listing_id || '',
+    title: row.title,
+    titleEl: row.title_el || row.title, // Fallback
+    category: row.category,
+    categoryEl: row.category_el || row.category, // Fallback
+    description: row.description || '',
+    descriptionEl: row.description_el || row.description, // Fallback
+    shortDescription: row.short_description || '',
+    shortDescriptionEl: row.short_description_el || row.short_description, // Fallback
+    images: images,
+    amenities: row.amenities || [],
+    amenitiesEl: row.amenities_el || row.amenities, // Fallback
+    capacity: row.capacity,
+    bedrooms: row.bedrooms,
+    bathrooms: row.bathrooms,
+    houseRules: row.house_rules || [],
+    cancellationPolicy: row.cancellation_policy || '',
+    location: row.location || '',
+    pricePerNightBase: row.price_per_night_base,
+    cleaningFee: row.cleaning_fee || 30, 
+    climateCrisisTax: row.climate_crisis_tax || 1.5
+  };
+};
 
 const mapPropertyToDB = (p: Property) => ({
   id: p.id,
@@ -54,6 +64,27 @@ const mapPropertyToDB = (p: Property) => ({
   climate_crisis_tax: p.climateCrisisTax
 });
 
+// Fallback mapper for when the DB schema is old (missing _el columns)
+const mapPropertyToLegacyDB = (p: Property) => ({
+  id: p.id,
+  hosthub_listing_id: p.hosthubListingId,
+  title: p.title,
+  category: p.category,
+  description: p.description,
+  short_description: p.shortDescription,
+  images: p.images,
+  amenities: p.amenities,
+  capacity: p.capacity,
+  bedrooms: p.bedrooms,
+  bathrooms: p.bathrooms,
+  house_rules: p.houseRules,
+  cancellation_policy: p.cancellationPolicy,
+  location: p.location,
+  price_per_night_base: p.pricePerNightBase,
+  cleaning_fee: p.cleaningFee,
+  climate_crisis_tax: p.climateCrisisTax
+});
+
 export const cmsService = {
   // Φόρτωση όλων των δεδομένων από Supabase
   loadContent: async (): Promise<CMSState> => {
@@ -63,14 +94,18 @@ export const cmsService = {
         .from('properties')
         .select('*');
 
-      if (propsError) throw propsError;
+      if (propsError) {
+         console.warn("DB Load Error (likely schema mismatch or empty), using initial data.");
+         return cmsService.getInitialState();
+      }
 
       let properties: Property[] = [];
       
       // Bootstrap: Αν η βάση είναι άδεια, ανέβασε τα αρχικά δεδομένα
       if (!propsData || propsData.length === 0) {
         console.log("Database empty. Bootstrapping initial properties...");
-        const initialRows = INITIAL_PROPERTIES.map(mapPropertyToDB);
+        // Use legacy mapping for bootstrap to avoid crashing on old schemas
+        const initialRows = INITIAL_PROPERTIES.map(mapPropertyToLegacyDB);
         const { error: insertError } = await supabase.from('properties').insert(initialRows);
         if (insertError) console.error("Bootstrap failed:", insertError);
         properties = INITIAL_PROPERTIES;
@@ -110,12 +145,28 @@ export const cmsService = {
 
   updateProperty: async (property: Property) => {
     const dbRow = mapPropertyToDB(property);
+    
+    // Attempt full save
     const { error } = await supabase
       .from('properties')
       .upsert(dbRow)
       .eq('id', property.id);
     
-    if (error) throw new Error(`Αποτυχία αποθήκευσης: ${error.message}`);
+    if (error) {
+      // If error is about missing columns, try legacy save
+      if (error.message?.includes('column') || error.code === '42703' || error.message?.includes('amenities_el')) {
+         console.warn("Schema mismatch detected. Attempting legacy save...");
+         const legacyRow = mapPropertyToLegacyDB(property);
+         const { error: legacyError } = await supabase
+            .from('properties')
+            .upsert(legacyRow)
+            .eq('id', property.id);
+            
+         if (legacyError) throw new Error(`Legacy Save Failed: ${legacyError.message}`);
+         return; // Success legacy save
+      }
+      throw new Error(`Αποτυχία αποθήκευσης: ${error.message}`);
+    }
   },
 
   saveSettings: async (state: CMSState) => {
@@ -179,7 +230,7 @@ export const cmsService = {
   getInitialState: (): CMSState => {
     return {
       properties: INITIAL_PROPERTIES,
-      brandName: "Loading...",
+      brandName: "TOWER 15 Suites",
       stripePublicKey: "",
       hosthubApiKey: ""
     };
