@@ -64,7 +64,7 @@ const mapPropertyToDB = (p: Property) => ({
   climate_crisis_tax: p.climateCrisisTax
 });
 
-// Fallback mapper for when the DB schema is old (missing _el columns)
+// Fallback mapper for when the DB schema is old (missing _el columns and new fee columns)
 const mapPropertyToLegacyDB = (p: Property) => ({
   id: p.id,
   hosthub_listing_id: p.hosthubListingId,
@@ -80,9 +80,8 @@ const mapPropertyToLegacyDB = (p: Property) => ({
   house_rules: p.houseRules,
   cancellation_policy: p.cancellationPolicy,
   location: p.location,
-  price_per_night_base: p.pricePerNightBase,
-  cleaning_fee: p.cleaningFee,
-  climate_crisis_tax: p.climateCrisisTax
+  price_per_night_base: p.pricePerNightBase
+  // REMOVED cleaning_fee and climate_crisis_tax to prevent crashes on old DBs
 });
 
 export const cmsService = {
@@ -154,7 +153,7 @@ export const cmsService = {
     
     if (error) {
       // If error is about missing columns, try legacy save
-      if (error.message?.includes('column') || error.code === '42703' || error.message?.includes('amenities_el')) {
+      if (error.message?.includes('column') || error.code === '42703' || error.message?.includes('amenities_el') || error.message?.includes('cleaning_fee')) {
          console.warn("Schema mismatch detected. Attempting legacy save...");
          const legacyRow = mapPropertyToLegacyDB(property);
          const { error: legacyError } = await supabase
