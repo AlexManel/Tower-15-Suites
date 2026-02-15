@@ -185,7 +185,7 @@ const InnerApp: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center space-y-6">
-          <img src="/public/images/loading_logo.png" alt="Tower 15 Suites" className="h-32 w-auto mx-auto animate-pulse object-contain" />
+          <img src="/public/images/logo.png" alt="Tower 15 Suites" className="h-32 w-auto mx-auto animate-pulse object-contain" />
           <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.4em]">Curating Experiences...</p>
         </div>
       </div>
@@ -253,7 +253,7 @@ const InnerApp: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-20">
               <div className="col-span-1 md:col-span-2">
                 <div className="flex items-center mb-12 select-none cursor-default group" onClick={handleLogoSecretClick}>
-                  <img src="/loading_logo.png" alt="Tower 15 Suites" className="h-20 w-auto mr-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500 object-contain" />
+                  <img src="/logo.png" alt="Tower 15 Suites" className="h-20 w-auto mr-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500 object-contain" />
                   <div>
                      <h3 className="text-white text-3xl font-serif tracking-tight">{cmsState.brandName}</h3>
                      <p className="text-gold-600 text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Hospitality Collection</p>
