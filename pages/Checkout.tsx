@@ -56,12 +56,12 @@ const Checkout: React.FC<CheckoutProps> = ({ bookingData, property, onSuccess, o
 
       if (!isStillAvailable) {
         setIsVerifying(false);
-        setError("Οι ημερομηνίες μόλις δεσμεύτηκαν από άλλη πλατφόρμα. Η πληρωμή ακυρώθηκε αυτόματα για την αποφυγή διπλοκράτησης.");
+        setError(t('errorRaceCondition'));
         return;
       }
     } catch (err) {
       setIsVerifying(false);
-      setError("Αδυναμία επιβεβαίωσης διαθεσιμότητας. Παρακαλώ δοκιμάστε ξανά σε λίγο.");
+      setError(t('errorVerify'));
       return;
     }
 
@@ -105,7 +105,7 @@ const Checkout: React.FC<CheckoutProps> = ({ bookingData, property, onSuccess, o
       setTimeout(onSuccess, 4000);
     } catch (err) {
       console.error(err);
-      setError("Η πληρωμή εγκρίθηκε, αλλά υπήρξε θέμα στον συγχρονισμό. Η κράτησή σας έχει καταγραφεί και θα ολοκληρωθεί χειροκίνητα άμεσα.");
+      setError(t('errorPaymentSync'));
       setStep('details');
     }
   };
@@ -182,11 +182,11 @@ const Checkout: React.FC<CheckoutProps> = ({ bookingData, property, onSuccess, o
           <div className="space-y-4 pt-8 border-t border-slate-50">
             <div className="flex justify-between text-slate-500 font-medium">
               <span>{t('stay')}</span>
-              <span>(included)</span>
+              <span>{t('included')}</span>
             </div>
             <div className="flex justify-between text-slate-500 font-medium">
               <span>{t('taxes')} & {t('cleaning')}</span>
-              <span>(included)</span>
+              <span>{t('included')}</span>
             </div>
             <div className="pt-6 mt-2 border-t border-slate-100 flex justify-between text-3xl font-bold text-slate-900 tracking-tighter">
               <span>{t('total')}</span>
@@ -283,7 +283,7 @@ const Checkout: React.FC<CheckoutProps> = ({ bookingData, property, onSuccess, o
                 
                 <div className="relative space-y-8">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Card Number</label>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">{t('cardNumber')}</label>
                     <div className="relative">
                       <input 
                         required 
@@ -299,7 +299,7 @@ const Checkout: React.FC<CheckoutProps> = ({ bookingData, property, onSuccess, o
                   
                   <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Expiry</label>
+                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">{t('expiry')}</label>
                       <input 
                         required 
                         placeholder="MM / YY" 
@@ -308,7 +308,7 @@ const Checkout: React.FC<CheckoutProps> = ({ bookingData, property, onSuccess, o
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">CVC</label>
+                      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">{t('cvc')}</label>
                       <input 
                         required 
                         placeholder="123" 
@@ -339,7 +339,7 @@ const Checkout: React.FC<CheckoutProps> = ({ bookingData, property, onSuccess, o
             
             <div className="flex flex-col items-center gap-4">
               <div className="flex items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                <span>Secure Checkout powered by</span>
+                <span>{t('securePowered')}</span>
                 <span className="text-slate-900 text-xs font-serif italic">Stripe</span>
               </div>
               <div className="flex gap-4 opacity-30 grayscale">
