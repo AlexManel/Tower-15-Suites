@@ -54,6 +54,36 @@ export const hosthubService = {
   },
 
   /**
+   * Fetch all listings from Hosthub to sync content.
+   */
+  getAllListings: async () => {
+    const { hosthubApiKey } = await cmsService.loadContent();
+
+    if (!hosthubApiKey) {
+      throw new Error("Missing Hosthub API Key in Settings");
+    }
+
+    try {
+      const response = await fetch(`${HOSTHUB_BASE_URL}/listings`, {
+        headers: {
+          'Authorization': `Bearer ${hosthubApiKey}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Hosthub Listings Fetch Error: ${response.status}`);
+      }
+
+      const json = await response.json();
+      return json.data || json; // Adjust based on exact Hosthub response structure
+    } catch (error) {
+      console.error("Hosthub Sync Error:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Πραγματικό push κράτησης στη Hosthub.
    * Μόλις γίνει αυτό, η Hosthub ενημερώνει Airbnb/Booking μέσα σε δευτερόλεπτα.
    */
