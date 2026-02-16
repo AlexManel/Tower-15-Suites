@@ -185,7 +185,7 @@ const InnerApp: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center space-y-6">
-          <img src="/images/logo.png" alt="Tower 15 Suites" className="h-40 w-auto mx-auto animate-pulse object-contain" />
+          <img src="/images/logo1.png" alt="Tower 15 Suites" className="h-40 w-auto mx-auto animate-pulse object-contain" />
           <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.4em]">Curating Experiences...</p>
         </div>
       </div>
