@@ -35,7 +35,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onBack, onBoo
   const fetchAvailability = async () => {
     if (!dates.checkIn || !dates.checkOut) return;
     if (new Date(dates.checkOut) <= new Date(dates.checkIn)) {
-      setError("Departure date must be after arrival.");
+      setError(t('errorDateOrder'));
       setAvailability([]);
       return;
     }
@@ -47,16 +47,16 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onBack, onBoo
       const isAvailable = res.length > 0 && res.every(d => d.available);
       
       if (!isAvailable && res.length > 0) {
-        setError("Selected dates are unavailable.");
+        setError(t('errorUnavailable'));
       } else if (res.length === 0) {
-        setError("Could not verify dates.");
+        setError(t('errorVerify'));
       }
 
       setAvailability(res);
       const sum = res.reduce((acc, curr) => acc + (curr.price || property.pricePerNightBase), 0);
       setTotalPrice(sum);
     } catch (e) {
-      setError("Communication error.");
+      setError(t('errorComm'));
     } finally {
       setIsLoading(false);
     }
