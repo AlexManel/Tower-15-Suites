@@ -45,6 +45,7 @@ const translations: Record<Language, Record<string, string>> = {
     confirmPay: "Confirm & Pay",
     processing: "Processing...",
     success: "Booking Confirmed!",
+    successTitle: "Booking Completed!",
     successMsg: "Thank you for your trust. A confirmation email has been sent to",
     redirecting: "Redirecting...",
     footerDesc: "A sanctuary of 17 luxury apartments in the heart of Thessaloniki. Meticulously renovated in 2024.",
@@ -72,9 +73,25 @@ const translations: Record<Language, Record<string, string>> = {
     stay: "Stay",
     secureSSL: "256-bit SSL Encryption. Your data is fully protected.",
     selection: "Selection",
-    successTitle: "Booking Completed!",
     payWithCard: "Pay with Card",
-    select: "Select"
+    select: "Select",
+    errorDateOrder: "Departure date must be after arrival.",
+    errorUnavailable: "Selected dates are unavailable.",
+    errorVerify: "Could not verify dates.",
+    errorComm: "Communication error.",
+    errorRaceCondition: "Dates were just booked by another platform. Payment cancelled.",
+    errorPaymentSync: "Payment approved but sync failed. Booking recorded manually.",
+    cardNumber: "Card Number",
+    expiry: "Expiry",
+    cvc: "CVC",
+    included: "(included)",
+    securePowered: "Secure Checkout powered by",
+    backToHome: "Back to Home",
+    hospitalityCollection: "Hospitality Collection",
+    pciCompliant: "PCI Level 1 Compliant",
+    secureTrans: "Secure Transactions",
+    curating: "Curating Experiences...",
+    officialDocs: "Official TOWER 15 Documentation"
   },
   el: {
     bookNow: "Κράτηση",
@@ -111,6 +128,7 @@ const translations: Record<Language, Record<string, string>> = {
     confirmPay: "Πληρωμή & Επιβεβαίωση",
     processing: "Επεξεργασία...",
     success: "Η κράτηση ολοκληρώθηκε!",
+    successTitle: "Η κράτηση ολοκληρώθηκε!",
     successMsg: "Σας ευχαριστούμε για την εμπιστοσύνη. Έχει σταλεί email επιβεβαίωσης στο",
     redirecting: "Ανακατεύθυνση...",
     footerDesc: "Ένα καταφύγιο 17 πολυτελών διαμερισμάτων στην καρδιά της Θεσσαλονίκης. Πλήρως ανακαινισμένο το 2024.",
@@ -138,16 +156,32 @@ const translations: Record<Language, Record<string, string>> = {
     stay: "Διαμονή",
     secureSSL: "256-bit Κρυπτογράφηση SSL. Τα δεδομένα σας είναι ασφαλή.",
     selection: "Επιλογή",
-    successTitle: "Η κράτηση ολοκληρώθηκε!",
     payWithCard: "Πληρωμή με Κάρτα",
-    select: "Επιλογή"
+    select: "Επιλογή",
+    errorDateOrder: "Η αναχώρηση πρέπει να είναι μετά την άφιξη.",
+    errorUnavailable: "Οι επιλεγμένες ημερομηνίες δεν είναι διαθέσιμες.",
+    errorVerify: "Αδυναμία επαλήθευσης ημερομηνιών.",
+    errorComm: "Σφάλμα επικοινωνίας.",
+    errorRaceCondition: "Οι ημερομηνίες μόλις δεσμεύτηκαν από άλλη πλατφόρμα. Η πληρωμή ακυρώθηκε.",
+    errorPaymentSync: "Η πληρωμή εγκρίθηκε, αλλά υπήρξε θέμα στον συγχρονισμό. Η κράτηση καταγράφηκε.",
+    cardNumber: "Αριθμός Κάρτας",
+    expiry: "Λήξη",
+    cvc: "CVC",
+    included: "(συμπεριλαμβάνεται)",
+    securePowered: "Ασφαλής Πληρωμή μέσω",
+    backToHome: "Επιστροφή στην Αρχική",
+    hospitalityCollection: "Συλλογή Φιλοξενίας",
+    pciCompliant: "Πιστοποίηση PCI Level 1",
+    secureTrans: "Ασφαλείς Συναλλαγές",
+    curating: "Δημιουργία Εμπειριών...",
+    officialDocs: "Επίσημα Έγγραφα TOWER 15"
   }
 };
 
 const LanguageContext = createContext<LanguageContextType>({
   language: 'el',
   setLanguage: () => {},
-  t: (key) => key
+  t: (key: string) => key
 });
 
 export const LanguageProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
