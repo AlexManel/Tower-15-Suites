@@ -5,7 +5,8 @@ import { hosthubService } from '../services/hosthubService';
 import { 
   ArrowLeft, Users, 
   AlertCircle, Loader2, 
-  BedDouble, Bath 
+  BedDouble, Bath,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -143,11 +144,26 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onBack, onBoo
               </p>
             </div>
 
-            {/* Gallery Grid */}
-            <div className="grid grid-cols-2 gap-4">
-               <img src={property.images[1] || property.images[0]} className="w-full aspect-[4/3] object-cover" alt="Detail" />
-               <img src={property.images[2] || property.images[0]} className="w-full aspect-[4/3] object-cover" alt="Detail" />
-            </div>
+            {/* Gallery Expansion - Show All Remaining Images */}
+            {property.images.length > 1 && (
+              <div>
+                <div className="flex items-center gap-3 mb-8 text-stone-900">
+                   <ImageIcon size={24} className="text-gold-500" />
+                   <h3 className="text-3xl font-serif">{t('gallery')}</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {property.images.slice(1).map((img, idx) => (
+                      <div key={idx} className="relative group overflow-hidden rounded-lg aspect-[4/3]">
+                        <img 
+                          src={img} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                          alt={`${title} - ${idx + 2}`} 
+                        />
+                      </div>
+                   ))}
+                </div>
+              </div>
+            )}
 
             {/* Amenities */}
             <div className="bg-stone-50 p-12">
