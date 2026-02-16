@@ -91,7 +91,8 @@ const translations: Record<Language, Record<string, string>> = {
     pciCompliant: "PCI Level 1 Compliant",
     secureTrans: "Secure Transactions",
     curating: "Curating Experiences...",
-    officialDocs: "Official TOWER 15 Documentation"
+    officialDocs: "Official TOWER 15 Documentation",
+    gallery: "Gallery"
   },
   el: {
     bookNow: "Κράτηση",
@@ -174,7 +175,8 @@ const translations: Record<Language, Record<string, string>> = {
     pciCompliant: "Πιστοποίηση PCI Level 1",
     secureTrans: "Ασφαλείς Συναλλαγές",
     curating: "Δημιουργία Εμπειριών...",
-    officialDocs: "Επίσημα Έγγραφα TOWER 15"
+    officialDocs: "Επίσημα Έγγραφα TOWER 15",
+    gallery: "Φωτογραφίες"
   }
 };
 
