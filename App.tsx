@@ -186,7 +186,7 @@ const InnerApp: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center space-y-6">
           {/* Logo on White Background */}
-          <img src="/images/logo.png" alt="TOWER 15" className="h-40 w-auto mx-auto animate-pulse object-contain" />
+          <img src="/images/logo1.png" alt="TOWER 15" className="h-40 w-auto mx-auto animate-pulse object-contain" />
           <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.4em]">{t('curating')}</p>
         </div>
       </div>
