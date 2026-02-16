@@ -185,8 +185,9 @@ const InnerApp: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center space-y-6">
-          <img src="/images/logo1.png" alt="Tower 15 Suites" className="h-40 w-auto mx-auto animate-pulse object-contain" />
-          <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.4em]">Curating Experiences...</p>
+          {/* Logo on White Background */}
+          <img src="/images/logo.png" alt="TOWER 15" className="h-40 w-auto mx-auto animate-pulse object-contain" />
+          <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.4em]">{t('curating')}</p>
         </div>
       </div>
     );
@@ -253,10 +254,10 @@ const InnerApp: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-20">
               <div className="col-span-1 md:col-span-2">
                 <div className="flex items-center mb-12 select-none cursor-default group" onClick={handleLogoSecretClick}>
-                  <img src="/secondary_logo-beige_pdf_page-0001-removebg-preview.png" alt="TOWER 15" className="h-20 w-auto mr-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500 object-contain" />
+                  <img src="/images/logo.png" alt="TOWER 15" className="h-20 w-auto mr-6 opacity-80 group-hover:opacity-100 transition-opacity duration-500 object-contain brightness-0 invert" />
                   <div>
                      <h3 className="text-white text-3xl font-serif tracking-tight">{cmsState.brandName}</h3>
-                     <p className="text-gold-600 text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Hospitality Collection</p>
+                     <p className="text-gold-600 text-[10px] font-bold uppercase tracking-[0.4em] mt-2">{t('hospitalityCollection')}</p>
                   </div>
                 </div>
                 <p className="max-w-md mb-12 leading-relaxed text-lg font-light text-stone-500">
@@ -276,7 +277,9 @@ const InnerApp: React.FC = () => {
                 <h4 className="text-gold-600 font-serif italic text-2xl mb-8">{t('residences')}</h4>
                 <ul className="space-y-4 text-sm font-bold uppercase tracking-widest overflow-hidden max-h-[300px] overflow-y-auto custom-scrollbar-footer pr-2 text-stone-500">
                   {cmsState.properties.slice(0, 8).map(p => (
-                    <li key={p.id} onClick={() => handlePropertyClick(p.id)} className="hover:text-white cursor-pointer transition-colors truncate">{p.title}</li>
+                    <li key={p.id} onClick={() => handlePropertyClick(p.id)} className="hover:text-white cursor-pointer transition-colors truncate">
+                       {language === 'el' ? (p.titleEl || p.title) : p.title}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -299,8 +302,8 @@ const InnerApp: React.FC = () => {
             <div className="mt-32 pt-12 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.3em] text-stone-600">
               <p>© {new Date().getFullYear()} {cmsState.brandName}. EST. 2024</p>
               <div className="flex items-center gap-8">
-                <span className="flex items-center gap-2"><ShieldCheck size={14} /> PCI Level 1 Compliant</span>
-                <span className="flex items-center gap-2">Secure Transactions</span>
+                <span className="flex items-center gap-2"><ShieldCheck size={14} /> {t('pciCompliant')}</span>
+                <span className="flex items-center gap-2">{t('secureTrans')}</span>
               </div>
             </div>
           </div>
