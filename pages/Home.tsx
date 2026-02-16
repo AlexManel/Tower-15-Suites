@@ -19,11 +19,11 @@ const Home: React.FC<HomeProps> = ({ properties, onPropertySelect }) => {
 
   return (
     <div>
-      {/* HERO SECTION */}
+     {/* HERO SECTION */}
       <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden bg-stone-900">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/tower15-exterior-night.jpg" 
+            src="/images/tower15-exterior-night.jpg" 
             className="w-full h-full object-cover opacity-60 scale-105 animate-pulse-slow" 
             alt="Tower 15 Building"
           />
@@ -40,7 +40,7 @@ const Home: React.FC<HomeProps> = ({ properties, onPropertySelect }) => {
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif text-white mb-2 leading-none animate-in fade-in zoom-in-95 duration-1000 delay-200">
             TOWER 15
           </h1>
-          <p className="text-xl md:text-3xl font-light text-white/90 tracking-[0.4em] mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+          <p className="text-sm md:text-xl font-medium text-white/90 tracking-[0.6em] mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
             SUITES
           </p>
           
