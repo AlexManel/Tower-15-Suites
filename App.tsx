@@ -16,7 +16,7 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 const getInfoContent = (language: 'en' | 'el', t: any) => ({
   story: {
     title: t('story'),
-    subtitle: language === 'el' ? "Ιδρυση 2024" : "Est. 2024",
+    subtitle: language === 'el' ? "Ιδρυση 2025" : "Est. 2025",
     content: language === 'el' ? (
       <>
         <p className="mb-6 first-letter:text-5xl first-letter:font-serif first-letter:text-gold-600 first-letter:float-left first-letter:mr-3">
@@ -25,7 +25,7 @@ const getInfoContent = (language: 'en' | 'el', t: any) => ({
           της εξελισσόμενης ταυτότητας της πόλης—γεφυρώνοντας το χάσμα μεταξύ του πλούσιου παρελθόντος και του κοσμοπολίτικου μέλλοντος.
         </p>
         <p className="mb-6">
-          Το 2024, προχωρήσαμε σε πλήρη ανακαίνιση του ακινήτου. Το όραμά μας ήταν απλό αλλά φιλόδοξο:
+          Το 2025, προχωρήσαμε σε πλήρη ανακαίνιση του ακινήτου. Το όραμά μας ήταν απλό αλλά φιλόδοξο:
           να δημιουργήσουμε ένα καταφύγιο μινιμαλιστικής πολυτέλειας για τον σύγχρονο ταξιδιώτη. Απογυμνώσαμε το κτίριο
           στον δομικό του πυρήνα και επανασχεδιάσαμε κάθε τετραγωνικό μέτρο, χρησιμοποιώντας υλικά υψηλής ποιότητας.
         </p>
@@ -38,7 +38,7 @@ const getInfoContent = (language: 'en' | 'el', t: any) => ({
           to the city's evolving identity—bridging the gap between its rich past and its cosmopolitan future.
         </p>
         <p className="mb-6">
-          In 2024, we undertook a complete renovation of the property. Our vision was simple yet ambitious: 
+          In 2025, we undertook a complete renovation of the property. Our vision was simple yet ambitious: 
           to create a sanctuary of minimalist luxury that caters to the modern traveler.
         </p>
       </>
@@ -300,7 +300,7 @@ const InnerApp: React.FC = () => {
             </div>
             
             <div className="mt-32 pt-12 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-[0.3em] text-stone-600">
-              <p>© {new Date().getFullYear()} {cmsState.brandName}. EST. 2024</p>
+              <p>© {new Date().getFullYear()} {cmsState.brandName}. EST. 2025</p>
               <div className="flex items-center gap-8">
                 <span className="flex items-center gap-2"><ShieldCheck size={14} /> {t('pciCompliant')}</span>
                 <span className="flex items-center gap-2">{t('secureTrans')}</span>
