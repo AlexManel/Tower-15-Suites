@@ -2,6 +2,7 @@
 import { Property, CMSState, RealBooking, BookingStatus } from '../types';
 import { INITIAL_PROPERTIES, getImages } from '../constants';
 import { supabase } from './supabase';
+import { hosthubService } from './hosthubService';
 
 // Helper to map DB snake_case to TS camelCase
 const mapPropertyFromDB = (row: any): Property => {
@@ -134,7 +135,6 @@ export const cmsService = {
     // 1. Try Modern Save
     try {
       const dbRow = mapPropertyToDB(property);
-      // FIXED: Removed .eq('id', property.id) because upsert works on the primary key in the body
       const { error } = await supabase
         .from('properties')
         .upsert(dbRow);
@@ -165,7 +165,6 @@ export const cmsService = {
          }
          
          // Try PATCH first (Update)
-         // Note: We use the ID in the URL to target the row.
          let response = await fetch(`${SUPABASE_URL}/rest/v1/properties?id=eq.${property.id}`, {
             method: 'PATCH',
             headers: {
@@ -203,6 +202,103 @@ export const cmsService = {
       }
       
       throw new Error(`Save Failed: ${error.message}`);
+    }
+  },
+
+  /**
+   * Syncs properties from Hosthub to Supabase.
+   * Merges remote data with local data to preserve Greek translations.
+   */
+  syncAllPropertiesFromHosthub: async (): Promise<{ updated: number, created: number }> => {
+    try {
+      // 1. Fetch current local properties (to preserve Greek translations and other local fields)
+      const currentState = await cmsService.loadContent();
+      const localProps = currentState.properties;
+
+      // 2. Fetch all listings from Hosthub
+      // The hosthubService must have the getAllListings method (implemented in Step 1)
+      const hosthubListings = await hosthubService.getAllListings();
+      
+      if (!hosthubListings || !Array.isArray(hosthubListings)) {
+        throw new Error("Invalid response from Hosthub API");
+      }
+
+      let updatedCount = 0;
+      let createdCount = 0;
+
+      // 3. Iterate and Merge
+      for (const listing of hosthubListings) {
+        // Find if we already have this property locally (match by Hosthub ID)
+        const existingProp = localProps.find(p => p.hosthubListingId === listing.id || p.hosthubListingId === listing.listing_id);
+        
+        // Map Hosthub images (assuming they return an array of objects or strings)
+        const rawImages = listing.photos || listing.images || [];
+        const mappedImages = Array.isArray(rawImages) 
+          ? rawImages.map((img: any) => typeof img === 'string' ? img : img.url || img.large || '').filter(Boolean)
+          : [];
+
+        // Prepare the new data object
+        // We prioritize Hosthub data for operational fields (price, availability details, main title)
+        // We prioritize Local data for translations and static content not in Hosthub
+        
+        let propertyToUpsert: Property;
+
+        if (existingProp) {
+          // UPDATE EXISTING: Merge Hosthub data on top, but keep local overrides (Greek fields)
+          propertyToUpsert = {
+            ...existingProp,
+            // Update fields from Hosthub
+            title: listing.name || listing.title || existingProp.title,
+            description: listing.description || existingProp.description,
+            pricePerNightBase: listing.base_rate || listing.price || existingProp.pricePerNightBase,
+            capacity: listing.max_guests || listing.capacity || existingProp.capacity,
+            bedrooms: listing.bedrooms || existingProp.bedrooms,
+            bathrooms: listing.bathrooms || existingProp.bathrooms,
+            // Update images only if Hosthub has them, otherwise keep local
+            images: mappedImages.length > 0 ? mappedImages : existingProp.images,
+            // Keep existing IDs
+            id: existingProp.id,
+            hosthubListingId: listing.id || existingProp.hosthubListingId
+          };
+          updatedCount++;
+        } else {
+          // CREATE NEW: Map fresh from Hosthub
+          propertyToUpsert = {
+            id: `t15-${Math.random().toString(36).substr(2, 5)}`, // Generate new internal ID
+            hosthubListingId: listing.id,
+            title: listing.name || "New Listing",
+            titleEl: listing.name || "New Listing", // Default Greek title to English initially
+            category: "Uncategorized",
+            categoryEl: "Χωρίς Κατηγορία",
+            description: listing.description || "",
+            descriptionEl: listing.description || "",
+            shortDescription: (listing.description || "").substring(0, 150),
+            shortDescriptionEl: (listing.description || "").substring(0, 150),
+            images: mappedImages.length > 0 ? mappedImages : getImages("new"),
+            amenities: [], // Hosthub amenities mapping is complex, leaving empty for manual review
+            amenitiesEl: [],
+            capacity: listing.max_guests || 2,
+            bedrooms: listing.bedrooms || 1,
+            bathrooms: listing.bathrooms || 1,
+            houseRules: [],
+            cancellationPolicy: "Standard",
+            location: listing.address || "Thessaloniki Center",
+            pricePerNightBase: listing.base_rate || 100,
+            cleaningFee: listing.cleaning_fee || 30,
+            climateCrisisTax: 1.5
+          };
+          createdCount++;
+        }
+
+        // Perform Upsert
+        await cmsService.updateProperty(propertyToUpsert);
+      }
+
+      return { updated: updatedCount, created: createdCount };
+
+    } catch (error: any) {
+      console.error("Sync Logic Error:", error);
+      throw new Error(`Sync Failed: ${error.message}`);
     }
   },
 
