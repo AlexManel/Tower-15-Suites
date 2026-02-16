@@ -33,7 +33,8 @@ import {
   Lock,
   Calendar as CalendarIcon,
   ChevronLeft,
-  User
+  User,
+  DownloadCloud
 } from 'lucide-react';
 
 interface AdminProps {
@@ -53,6 +54,7 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
   const [isUploading, setIsUploading] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isSyncing, setIsSyncing] = React.useState(false);
   const [settingsFeedback, setSettingsFeedback] = React.useState<string | null>(null);
   
   const [currentDate, setCurrentDate] = React.useState(new Date());
@@ -111,6 +113,32 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
       alert(error.message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSyncHosthub = async () => {
+    if (!state.hosthubApiKey) {
+      alert("Please enter and save a Hosthub API Key first.");
+      return;
+    }
+    
+    if (!window.confirm("This will import listings from Hosthub and update local prices/images. Your Greek translations will be preserved. Continue?")) {
+      return;
+    }
+
+    setIsSyncing(true);
+    setSettingsFeedback(null);
+
+    try {
+      const result = await cmsService.syncAllPropertiesFromHosthub();
+      setSettingsFeedback(`Sync Complete: Updated ${result.updated} properties, Created ${result.created} new.`);
+      // Reload state to show changes
+      const cmsData = await cmsService.loadContent();
+      setState(cmsData);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -578,13 +606,18 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
            <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in duration-500">
               <div className="flex justify-between items-center">
                  <h1 className="text-3xl font-bold tracking-tighter">System Configuration</h1>
-                 <button onClick={handleSaveSettings} disabled={isSaving} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-slate-800 transition-all disabled:opacity-50">
-                    {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} Save Settings
-                 </button>
+                 <div className="flex gap-4">
+                   <button onClick={handleSyncHosthub} disabled={isSyncing} className="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm hover:bg-blue-100 transition-all disabled:opacity-50">
+                      {isSyncing ? <Loader2 className="animate-spin" size={18} /> : <DownloadCloud size={18} />} Sync Hosthub
+                   </button>
+                   <button onClick={handleSaveSettings} disabled={isSaving} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-slate-800 transition-all disabled:opacity-50">
+                      {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} Save Settings
+                   </button>
+                 </div>
               </div>
 
               {settingsFeedback && (
-                 <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 p-4 rounded-xl flex items-center gap-3 font-bold text-sm">
+                 <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 p-4 rounded-xl flex items-center gap-3 font-bold text-sm animate-in slide-in-from-top-2">
                     <CheckCircle2 size={18} /> {settingsFeedback}
                  </div>
               )}
