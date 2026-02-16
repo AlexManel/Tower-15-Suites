@@ -37,7 +37,7 @@ const Navbar: React.FC<NavbarProps> = ({ properties, onPropertySelect, onHomeCli
           {/* Brand Logo - Image Based */}
           <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer group" onClick={onHomeClick}>
             <img 
-              src="/logo.png" 
+              src="/images/logo.png" 
               alt={brandName} 
               className={`h-12 w-auto object-contain transition-all duration-500 ${scrolled ? '' : 'brightness-0 invert'}`} 
             />
