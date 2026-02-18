@@ -10,52 +10,42 @@ import { supabase } from './supabase';
 // Βασικό URL της Hosthub
 const HOSTHUB_API_URL = 'https://api.hosthub.com/v1';
 
-// Helper για δημιουργία Proxy URL (AllOrigins)
+// 1. Αλλαγή στο Helper (βγάζουμε το /raw)
 const getProxyUrl = (targetUrl: string) => {
-  return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+  return 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
 };
 
-export const hosthubService = {
-  /**
-   * Φέρνει τη διαθεσιμότητα. 
-   * Αυτή η μέθοδος είναι δημόσια (για τους επισκέπτες), οπότε ΔΕΝ ζητάμε admin login,
-   * αλλά χρησιμοποιούμε το AllOrigins Proxy για να μην έχουμε CORS errors.
-   */
-  getAvailability: async (listingId: string, start: string, end: string): Promise<HosthubAvailability[]> => {
-    const { hosthubApiKey } = await cmsService.loadContent();
+// 2. Αλλαγή στη συνάρτηση getAllListings
+getAllListings: async () => {
+  // Security Check (όπως το είχες)
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Απαιτείται σύνδεση διαχειριστή.');
+
+  const { hosthubApiKey } = await cmsService.loadContent();
+  if (!hosthubApiKey) return [];
+
+  try {
+    const targetUrl = `${HOSTHUB_API_URL}/listings`;
+    const url = getProxyUrl(targetUrl);
+
+    // ΣΗΜΑΝΤΙΚΟ: Στο AllOrigins (non-raw), δεν στέλνουμε headers στο fetch 
+    // γιατί ο proxy δεν μπορεί να τα προωθήσει εύκολα. 
+    // Αν το API της Hosthub δέχεται το κλειδί ως Query Param, είναι το ιδανικό.
+    // Αλλιώς, δοκίμασε το fetch έτσι:
+    const response = await fetch(url); 
+
+    if (!response.ok) throw new Error(`Fetch Error: ${response.status}`);
+
+    const wrapper = await response.json();
+    // Το AllOrigins επιστρέφει τα δεδομένα της Hosthub μέσα στο wrapper.contents ως STRING
+    const data = JSON.parse(wrapper.contents);
     
-    if (!hosthubApiKey) {
-      console.warn("No Hosthub API Key found. Using simulation.");
-      return simulateAvailability(start, end);
-    }
-
-    try {
-      const targetUrl = `${HOSTHUB_API_URL}/listings/${listingId}/calendar?from=${start}&to=${end}`;
-      const url = getProxyUrl(targetUrl);
-
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${hosthubApiKey}`,
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) throw new Error(`Hosthub API Error: ${response.status}`);
-      
-      const data = await response.json();
-      const days = Array.isArray(data) ? data : (data.data || []);
-
-      return days.map((day: any) => ({
-        date: day.date,
-        available: day.status === 'available',
-        price: day.price || 0,
-        minStay: day.min_stay || 1
-      }));
-    } catch (error) {
-      console.error("Availability Sync Error:", error);
-      return [];
-    }
-  },
+    return data.data || data; 
+  } catch (error) {
+    console.error("Hosthub Sync Error:", error);
+    throw error;
+  }
+}
 
   /**
    * Fetch all listings from Hosthub to sync content.
