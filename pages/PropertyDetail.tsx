@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Property, HosthubAvailability } from '../types';
 import { hosthubService } from '../services/hosthubService';
