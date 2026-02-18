@@ -1,4 +1,3 @@
-
 export interface Property {
   id: string;
   hosthubListingId: string;
