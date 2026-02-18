@@ -55,12 +55,15 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
     hosthubApiKey: ''
   });
 
-  // 2. Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
-  React.useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-  }, []);
+React.useEffect(() => {
+  // Ορίζουμε τον τύπο στο catch ή στο then για να μην έχουμε "implicitly any"
+  const checkSession = async () => {
+    const { data } = await supabase.auth.getSession();
+    setSession(data.session);
+  };
+  
+  checkSession();
+}, []);
 
   // 3. Συνάρτηση Login
   const handleLogin = async (e: React.FormEvent) => {
