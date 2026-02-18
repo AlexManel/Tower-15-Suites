@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { supabase } from '../services/supabase';
 import { CMSState, Property, RealBooking } from '../types';
 import { cmsService } from '../services/cmsService';
 import { aiService } from '../services/aiService';
