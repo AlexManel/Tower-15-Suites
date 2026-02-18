@@ -8,8 +8,9 @@ import { cmsService } from './cmsService';
  * Σημείωση: Στην παραγωγή προτείνεται η χρήση ενός Proxy για την προστασία του API Key.
  */
 
-// Χρήση ενός δημόσιου CORS proxy για το demo/launch αν δεν υπάρχει backend
-const HOSTHUB_BASE_URL = 'https://api.hosthub.com/v1';
+
+// Προσθήκη ενός CORS Proxy για να επιτραπεί η κλήση από τον browser
+const HOSTHUB_BASE_URL = 'https://corsproxy.io/?https://api.hosthub.com/v1';
 
 export const hosthubService = {
   /**
