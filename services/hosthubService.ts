@@ -4,109 +4,97 @@ import { supabase } from './supabase';
 
 /**
  * PRODUCTION READY SERVICE
- * Αυτή η υπηρεσία συνδέεται με το API της Hosthub.
+ * Αυτή η υπηρεσία συνδέεται με το API της Hosthub μέσω Proxy για αποφυγή CORS.
  */
 
-// Βασικό URL της Hosthub
 const HOSTHUB_API_URL = 'https://api.hosthub.com/v1';
 
-// 1. Αλλαγή στο Helper (βγάζουμε το /raw)
+// Χρήση του AllOrigins JSON endpoint (πιο σταθερό από το /raw)
 const getProxyUrl = (targetUrl: string) => {
   return 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
 };
 
-// 2. Αλλαγή στη συνάρτηση getAllListings
-getAllListings: async () => {
-  // Security Check (όπως το είχες)
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('Απαιτείται σύνδεση διαχειριστή.');
-
-  const { hosthubApiKey } = await cmsService.loadContent();
-  if (!hosthubApiKey) return [];
-
-  try {
-    const targetUrl = `${HOSTHUB_API_URL}/listings`;
-    const url = getProxyUrl(targetUrl);
-
-    // ΣΗΜΑΝΤΙΚΟ: Στο AllOrigins (non-raw), δεν στέλνουμε headers στο fetch 
-    // γιατί ο proxy δεν μπορεί να τα προωθήσει εύκολα. 
-    // Αν το API της Hosthub δέχεται το κλειδί ως Query Param, είναι το ιδανικό.
-    // Αλλιώς, δοκίμασε το fetch έτσι:
-    const response = await fetch(url); 
-
-    if (!response.ok) throw new Error(`Fetch Error: ${response.status}`);
-
-    const wrapper = await response.json();
-    // Το AllOrigins επιστρέφει τα δεδομένα της Hosthub μέσα στο wrapper.contents ως STRING
-    const data = JSON.parse(wrapper.contents);
+export const hosthubService = {
+  /**
+   * Φέρνει τη διαθεσιμότητα (Public/Visitors)
+   */
+  getAvailability: async (listingId: string, start: string, end: string): Promise<HosthubAvailability[]> => {
+    const { hosthubApiKey } = await cmsService.loadContent();
     
-    return data.data || data; 
-  } catch (error) {
-    console.error("Hosthub Sync Error:", error);
-    throw error;
-  }
-}
+    if (!hosthubApiKey) {
+      console.warn("No Hosthub API Key found. Using simulation.");
+      return simulateAvailability(start, end);
+    }
+
+    try {
+      const targetUrl = `${HOSTHUB_API_URL}/listings/${listingId}/calendar?from=${start}&to=${end}`;
+      const url = getProxyUrl(targetUrl);
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Hosthub API Error: ${response.status}`);
+      
+      const wrapper = await response.json();
+      const data = JSON.parse(wrapper.contents);
+      const days = Array.isArray(data) ? data : (data.data || []);
+
+      return days.map((day: any) => ({
+        date: day.date,
+        available: day.status === 'available',
+        price: day.price || 0,
+        minStay: day.min_stay || 1
+      }));
+    } catch (error) {
+      console.error("Availability Sync Error:", error);
+      return [];
+    }
+  },
 
   /**
-   * Fetch all listings from Hosthub to sync content.
-   * SECURITY: Απαιτεί σύνδεση Admin στο Supabase.
-   * Χρησιμοποιεί AllOrigins Proxy για CORS.
+   * Φέρνει όλα τα listings (Admin Only)
    */
   getAllListings: async () => {
-    // 1. Security Check: Verify Admin Session
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       throw new Error('Απαιτείται σύνδεση διαχειριστή για τον συγχρονισμό.');
     }
 
-    // 2. Load API Key
     const { hosthubApiKey } = await cmsService.loadContent();
     if (!hosthubApiKey) {
-      console.warn("Missing Hosthub API Key in Settings");
-      return [];
+      throw new Error("Missing Hosthub API Key in Settings");
     }
 
     try {
-      // 3. Prepare Proxy URL (AllOrigins)
       const targetUrl = `${HOSTHUB_API_URL}/listings`;
       const url = getProxyUrl(targetUrl);
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${hosthubApiKey}`,
-          'Accept': 'application/json'
-        }
-      });
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Hosthub Listings Fetch Error: ${response.status}`);
 
-      if (!response.ok) {
-        throw new Error(`Hosthub Listings Fetch Error: ${response.status}`);
-      }
-
-      const json = await response.json();
-      return json.data || json; 
+      const wrapper = await response.json();
+      const data = JSON.parse(wrapper.contents);
+      
+      return data.data || data; 
     } catch (error) {
       console.error("Hosthub Sync Error:", error);
-      throw error; // Πετάμε το error για να το δει το UI του Admin
+      throw error;
     }
   },
 
   /**
-   * Push Booking.
-   * Σημείωση: Το AllOrigins υποστηρίζει κυρίως GET. Για POST χρησιμοποιούμε εναλλακτικό Proxy
-   * ή απευθείας κλήση αν το υποστηρίζει ο server (συνήθως τα POST bookings απαιτούν backend).
+   * Στέλνει κράτηση στη Hosthub
    */
   pushBooking: async (bookingData: any) => {
     const { hosthubApiKey } = await cmsService.loadContent();
     
     if (!hosthubApiKey) {
-      console.log("Simulation: Booking stored locally only (No Hosthub Key).");
+      console.log("Simulation: Booking stored locally only.");
       return { status: 'success', simulation: true };
     }
 
     try {
       const targetUrl = `${HOSTHUB_API_URL}/bookings`;
-      // Χρησιμοποιούμε corsproxy.io για POST καθώς το AllOrigins είναι συχνά read-only (GET)
-      const url = 'https://corsproxy.io/?' + targetUrl;
+      // Για POST χρησιμοποιούμε corsproxy.io
+      const url = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -137,28 +125,12 @@ getAllListings: async () => {
        console.error("Hosthub Push Booking Error:", error);
        throw error;
     }
-  },
-  
-  // Legacy method wrapper (αν χρησιμοποιείται αλλού)
-  syncBookings: async (apiKey: string) => {
-      try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) throw new Error('Απαιτείται σύνδεση διαχειριστή');
-
-          const targetUrl = `${HOSTHUB_API_URL}/bookings`; // GET bookings
-          const url = getProxyUrl(targetUrl);
-
-          const response = await fetch(url, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
-          });
-          const data = await response.json();
-          return { success: true, message: 'Sync complete', data };
-      } catch (e: any) {
-          return { success: false, message: e.message };
-      }
   }
 };
 
+/**
+ * Fallback για όταν δεν υπάρχει API Key
+ */
 async function simulateAvailability(start: string, end: string): Promise<HosthubAvailability[]> {
   const dates: HosthubAvailability[] = [];
   const curr = new Date(start);
