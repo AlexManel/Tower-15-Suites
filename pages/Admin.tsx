@@ -42,12 +42,79 @@ interface AdminProps {
 }
 
 const Admin: React.FC<AdminProps> = ({ onExit }) => {
+  // 1. Προσθήκη state για το session
+  const [session, setSession] = React.useState<any>(null);
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
   const [state, setState] = React.useState<CMSState>({
     properties: [],
     brandName: '',
     stripePublicKey: '',
     hosthubApiKey: ''
   });
+
+  // 2. Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+  }, []);
+
+  // 3. Συνάρτηση Login
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      alert("Λάθος στοιχεία: " + error.message);
+    } else {
+      setSession(data.session);
+    }
+  };
+
+  // 4. Αν δεν υπάρχει session, δείξε τη φόρμα σύνδεσης
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <form onSubmit={handleLogin} className="bg-gray-800 p-8 rounded-xl border border-gold/20 w-full max-w-md shadow-2xl">
+          <h2 className="text-2xl font-serif text-gold mb-6 text-center">Admin Access</h2>
+          <div className="space-y-4">
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full bg-gray-700 border border-gray-600 p-3 rounded text-white focus:border-gold outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full bg-gray-700 border border-gray-600 p-3 rounded text-white focus:border-gold outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button 
+              type="submit"
+              className="w-full bg-gold hover:bg-yellow-600 text-black font-bold py-3 rounded transition duration-300"
+            >
+              ΕΙΣΟΔΟΣ
+            </button>
+            <button 
+              onClick={onExit}
+              className="w-full text-gray-400 hover:text-white text-sm"
+            >
+              Επιστροφή στο site
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  // Από εδώ και κάτω συνεχίζει το υπόλοιπο Admin UI σου (Tabs, Sync Buttons κλπ)
   const [bookings, setBookings] = React.useState<RealBooking[]>([]);
   const [activeTab, setActiveTab] = React.useState<'dashboard' | 'properties' | 'bookings' | 'settings' | 'transactions' | 'ai'>('dashboard');
   const [editingProp, setEditingProp] = React.useState<Property | null>(null);
