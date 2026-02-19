@@ -11,6 +11,7 @@ import { Property, CMSState } from './types';
 import { cmsService } from './services/cmsService';
 import { ShieldCheck, Instagram, Facebook } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Content Helper
 const getInfoContent = (language: 'en' | 'el', t: any) => ({
@@ -309,6 +310,7 @@ const InnerApp: React.FC = () => {
           </div>
         </footer>
       )}
+      <SpeedInsights />
     </div>
   );
 };
