@@ -1,82 +1,172 @@
+
+import React from 'react';
+import { CMSState, Property, RealBooking } from '../types';
+import { cmsService } from '../services/cmsService';
+import { aiService } from '../services/aiService';
+import { 
+  LayoutDashboard, 
+  Home, 
+  BookOpen, 
+  Settings, 
+  Save, 
+  Edit3, 
+  Trash2, 
+  Plus, 
+  CheckCircle2, 
+  X,
+  RefreshCw,
+  History,
+  LogOut,
+  SlidersHorizontal,
+  CreditCard,
+  FileText,
+  Zap,
+  Image as ImageIcon,
+  Scale,
+  Upload,
+  Loader2,
+  Wand2,
+  Sparkles,
+  ChevronRight,
+  Server,
+  Globe,
+  Lock,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  User,
+  DownloadCloud
+} from 'lucide-react';
+
+interface AdminProps {
+  onExit: () => void;
+}
+
 const Admin: React.FC<AdminProps> = ({ onExit }) => {
-  // 1. ΟΛΑ ΤΑ STATES (ΜΟΝΟ ΜΙΑ ΦΟΡΑ)
-  const [session, setSession] = React.useState<any>(null);
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [authLoading, setAuthLoading] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [isSyncing, setIsSyncing] = React.useState(false);
-  const [isUploading, setIsUploading] = React.useState(false);
-  const [isAiProcessing, setIsAiProcessing] = React.useState(false);
-  
   const [state, setState] = React.useState<CMSState>({
-    properties: [], brandName: '', stripePublicKey: '', hosthubApiKey: ''
+    properties: [],
+    brandName: '',
+    stripePublicKey: '',
+    hosthubApiKey: ''
   });
   const [bookings, setBookings] = React.useState<RealBooking[]>([]);
   const [activeTab, setActiveTab] = React.useState<'dashboard' | 'properties' | 'bookings' | 'settings' | 'transactions' | 'ai'>('dashboard');
   const [editingProp, setEditingProp] = React.useState<Property | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isSyncing, setIsSyncing] = React.useState(false);
   const [settingsFeedback, setSettingsFeedback] = React.useState<string | null>(null);
-  const [aiPrompt, setAiPrompt] = React.useState('');
-  const [aiFeedback, setAiFeedback] = React.useState<{type: 'success'|'error', msg: string} | null>(null);
+  
   const [currentDate, setCurrentDate] = React.useState(new Date());
 
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const totalRevenue = bookings.reduce((a, b) => a + b.amount, 0);
+  const [aiPrompt, setAiPrompt] = React.useState('');
+  const [isAiProcessing, setIsAiProcessing] = React.useState(false);
+  const [aiFeedback, setAiFeedback] = React.useState<{type: 'success'|'error', msg: string} | null>(null);
 
-  // 2. AUTH & DATA FETCHING
+  const totalRevenue = bookings.reduce((a,b) => a + b.amount, 0);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   React.useEffect(() => {
-    const init = async () => {
-      const { data: { session: cur } } = await supabase.auth.getSession();
-      setSession(cur);
-      if (cur) {
-        const [cmsData, bookingData] = await Promise.all([
-          cmsService.loadContent(),
-          cmsService.fetchBookings()
-        ]);
-        setState(cmsData);
-        setBookings(bookingData);
-      }
+    const fetchData = async () => {
+      setIsLoading(true);
+      const cmsData = await cmsService.loadContent();
+      const bookingData = await cmsService.fetchBookings();
+      setState(cmsData);
+      setBookings(bookingData);
       setIsLoading(false);
     };
-    init();
+    fetchData();
   }, []);
 
-  // 3. HANDLERS (LOGIN, SAVE, SYNC, AI, IMAGES)
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert(error.message); else setSession(data.session);
-    setAuthLoading(false);
+  const handleSaveProperty = async () => {
+    if (editingProp) {
+      setIsSaving(true);
+      try {
+        await cmsService.updateProperty(editingProp);
+        
+        const isNew = !state.properties.find(p => p.id === editingProp.id);
+        let newProps = [...state.properties];
+        if (isNew) {
+           newProps.push(editingProp);
+        } else {
+           newProps = newProps.map(p => p.id === editingProp.id ? editingProp : p);
+        }
+        setState({ ...state, properties: newProps });
+        setEditingProp(null);
+      } catch (error: any) {
+        console.error(error);
+        alert(error.message || "Σφάλμα αποθήκευσης.");
+      } finally {
+        setIsSaving(false);
+      }
+    }
   };
 
-  const handleSaveProperty = async () => {
-    if (!editingProp) return;
+  const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
-      await cmsService.updateProperty(editingProp);
-      const isNew = !state.properties.find(p => p.id === editingProp.id);
-      const newProps = isNew ? [...state.properties, editingProp] : state.properties.map(p => p.id === editingProp.id ? editingProp : p);
-      setState({ ...state, properties: newProps });
-      setEditingProp(null);
-    } catch (e: any) { alert(e.message); } finally { setIsSaving(false); }
+      await cmsService.saveSettings(state);
+      setSettingsFeedback("Configuration saved successfully.");
+      setTimeout(() => setSettingsFeedback(null), 3000);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSyncHosthub = async () => {
-    if (!state.hosthubApiKey) return alert("Missing API Key");
-    if (!window.confirm("Sync with Hosthub?")) return;
+    if (!state.hosthubApiKey) {
+      alert("Please enter and save a Hosthub API Key first.");
+      return;
+    }
+    
+    if (!window.confirm("This will import listings from Hosthub and update local prices/images. Your Greek translations will be preserved. Continue?")) {
+      return;
+    }
+
     setIsSyncing(true);
+    setSettingsFeedback(null);
+
     try {
-      await cmsService.syncAllPropertiesFromHosthub();
-      const data = await cmsService.loadContent();
-      setState(data);
-      setSettingsFeedback("Sync Complete!");
-    } catch (e: any) { alert(e.message); } finally { setIsSyncing(false); }
+      const result = await cmsService.syncAllPropertiesFromHosthub();
+      setSettingsFeedback(`Sync Complete: Updated ${result.updated} properties, Created ${result.created} new.`);
+      // Reload state to show changes
+      const cmsData = await cmsService.loadContent();
+      setState(cmsData);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleAddNew = () => {
+    const newProp: Property = {
+      id: `t15-${Math.random().toString(36).substr(2, 5)}`,
+      hosthubListingId: '',
+      title: 'New Residence',
+      category: 'Uncategorized',
+      description: '',
+      shortDescription: '',
+      images: [],
+      amenities: [],
+      capacity: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      houseRules: [],
+      cancellationPolicy: '',
+      location: 'Thessaloniki',
+      pricePerNightBase: 100,
+      cleaningFee: 30,
+      climateCrisisTax: 1.5
+    };
+    setEditingProp(newProp);
   };
 
   const compressImage = (file: File): Promise<string> => {
-    return new Promise((res, rej) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = (e) => {
@@ -84,111 +174,132 @@ const Admin: React.FC<AdminProps> = ({ onExit }) => {
         img.src = e.target?.result as string;
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX = 1200;
-          let w = img.width, h = img.height;
-          if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } }
-          else { if (h > MAX) { w *= MAX/h; h = MAX; } }
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
-          res(canvas.toDataURL('image/jpeg', 0.7));
+          let width = img.width;
+          let height = img.height;
+          const MAX_SIZE = 1200;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error("Canvas context error"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
         };
+        img.onerror = (err) => reject(err);
       };
+      reader.onerror = (err) => reject(err);
     });
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
+  const processFiles = async (files: FileList) => {
     setIsUploading(true);
+    
     try {
-      const urls = await Promise.all(Array.from(e.target.files).map(f => compressImage(f)));
-      setEditingProp(prev => prev ? { ...prev, images: [...prev.images, ...urls] } : null);
-    } finally { setIsUploading(false); }
+      const promises = Array.from(files).map(file => compressImage(file));
+      const newImages = await Promise.all(promises);
+      
+      setEditingProp(prev => {
+        if (!prev) return null;
+        return { ...prev, images: [...prev.images, ...newImages] };
+      });
+    } catch (error) {
+      console.error("Image processing error", error);
+      alert("Error processing images.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) processFiles(e.target.files);
   };
 
   const handleAiMagic = async () => {
     if (!aiPrompt.trim()) return;
     setIsAiProcessing(true);
+    setAiFeedback(null);
     try {
       const newState = await aiService.processCmsUpdate(state, aiPrompt);
-      for (const p of newState.properties) await cmsService.updateProperty(p);
+      // Update all properties in the DB
+      for (const p of newState.properties) {
+        await cmsService.updateProperty(p);
+      }
+      // Update local state
       setState(newState);
       setAiPrompt('');
-      setAiFeedback({type: 'success', msg: 'AI Architect updated your site!'});
-    } catch (e: any) { setAiFeedback({type: 'error', msg: e.message}); } finally { setIsAiProcessing(false); }
+      setAiFeedback({type: 'success', msg: 'Website updated successfully by AI Architect!'});
+    } catch (e: any) {
+      setAiFeedback({type: 'error', msg: e.message || 'AI couldn\'t complete the request.'});
+    } finally {
+      setIsAiProcessing(false);
+    }
   };
 
-  // 4. HELPER FUNCTIONS (CALENDAR)
-  const changeMonth = (d: number) => {
-    const n = new Date(currentDate); n.setMonth(n.getMonth() + d); setCurrentDate(n);
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const days = new Date(year, month + 1, 0).getDate();
+    return Array.from({ length: days }, (_, i) => i + 1);
   };
-  const getDaysInMonth = (date: Date) => Array.from({ length: new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate() }, (_, i) => i + 1);
-  const isBooked = (pId: string, d: number) => {
-    const target = new Date(currentDate.getFullYear(), currentDate.getMonth(), d).setHours(0,0,0,0);
-    return bookings.find(b => pId === b.propertyId && target >= new Date(b.checkIn).setHours(0,0,0,0) && target < new Date(b.checkOut).setHours(0,0,0,0));
+
+  const changeMonth = (delta: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + delta);
+    setCurrentDate(newDate);
   };
-const Admin: React.FC<AdminProps> = ({ onExit }) => {
-  // --- ΕΔΩ ΕΙΝΑΙ ΤΑ STATES ΣΟΥ ---
-  const [session, setSession] = React.useState<any>(null);
-  // ... όλα τα άλλα states ...
 
-  // --- ΕΔΩ ΕΙΝΑΙ ΤΑ EFFECTS ΣΟΥ ---
-  React.useEffect(() => { /* ... fetching logic ... */ }, []);
+  const isBooked = (propertyId: string, day: number) => {
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    targetDate.setHours(0, 0, 0, 0);
 
-  // --- ΕΔΩ ΒΑΛΕ ΤΟΥΣ ΝΕΟΥΣ HANDLERS (ΑΥΤΑ ΠΟΥ ΣΟΥ ΕΔΩΣΑ) ---
-  const handleSaveSettings = async () => { /* ... logic ... */ };
-  const handleAddNew = () => { /* ... logic ... */ };
+    return bookings.find(b => {
+      const start = new Date(b.checkIn);
+      const end = new Date(b.checkOut);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      return b.propertyId === propertyId && targetDate >= start && targetDate < end;
+    });
+  };
 
-  // --- ΕΔΩ ΕΙΝΑΙ ΟΙ ΗΔΗ ΥΠΑΡΧΟΝΤΕΣ HANDLERS ΣΟΥ ---
-  const handleLogin = async (e: React.FormEvent) => { /* ... */ };
-  // ... κλπ ...
-
-  // --- ΒΟΗΘΗΤΙΚΟ COMPONENT ΓΙΑ ΤΟ MENU (NavItem) ---
-  // Μπορείς να το βάλεις και έξω από το Admin component για να μην "πιάνει χώρο"
-  const NavItem = ({ id, label, icon: Icon }: any) => (
-     <button onClick={() => setActiveTab(id)} ... >...</button>
-  );
-
-  // --- ΤΕΛΟΣ ΤΗΣ ΛΟΓΙΚΗΣ ---
-  // 5. RENDER LOGIC (LOGIN / LOADING / MAIN)
-  if (!session && !isLoading) {
+  const NavItem = ({ id, label, icon: Icon }: { id: any, label: string, icon: any }) => {
+    const isActive = activeTab === id;
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <form onSubmit={handleLogin} className="bg-gray-800 p-8 rounded-xl border border-yellow-600/20 w-full max-w-md">
-          <h2 className="text-2xl font-serif text-yellow-500 mb-6 text-center">Admin Access</h2>
-          <input type="email" placeholder="Email" className="w-full bg-gray-700 p-3 mb-4 rounded text-white" value={email} onChange={e => setEmail(e.target.value)} />
-          <input type="password" placeholder="Password" className="w-full bg-gray-700 p-3 mb-4 rounded text-white" value={password} onChange={e => setPassword(e.target.value)} />
-          <button className="w-full bg-yellow-600 text-black py-3 rounded font-bold uppercase tracking-widest">{authLoading ? 'Σύνδεση...' : 'Είσοδος'}</button>
-        </form>
-      </div>
+      <button 
+        onClick={() => { setActiveTab(id); setEditingProp(null); }}
+        className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-5 py-2 md:py-4 rounded-xl md:rounded-2xl transition-all flex-1 md:flex-none ${
+          isActive 
+          ? 'text-slate-900 md:bg-slate-900 md:text-white md:shadow-lg' 
+          : 'text-slate-400 md:text-slate-600 hover:bg-slate-100'
+        }`}
+      >
+        <Icon size={isActive ? 22 : 20} className={isActive ? 'scale-110' : ''} />
+        <span className={`text-[10px] md:text-sm font-bold uppercase md:capitalize tracking-tighter md:tracking-normal ${isActive ? 'opacity-100' : 'opacity-70'}`}>
+          {label}
+        </span>
+      </button>
     );
-  }
-return (
-    <div className="min-h-screen ...">
-      {/* 1. ΤΟ MODAL ΤΟΥ EDITOR (Το "αόρατο" παράθυρο) */}
-      {/* Βάλτο στην αρχή του return, ώστε όταν ενεργοποιείται να μπαίνει "πάνω" από όλα */}
-      {editingProp && (
-        <div className="fixed inset-0 ..."> 
-           {/* Ο κώδικας του Editor που σου έστειλα πριν */}
-        </div>
-      )}
+  };
 
-      {/* 2. SIDEBAR & MOBILE HEADER */}
-      <aside> ... </aside>
-      <header> ... </header>
-
-      {/* 3. ΤΟ ΚΥΡΙΩΣ ΠΕΡΙΕΧΟΜΕΝΟ (MAIN) */}
-      <main className="...">
-         {/* Εδώ εμφανίζονται τα tabs ανάλογα με το τι πάτησες */}
-         {activeTab === 'dashboard' && <DashboardUI />}
-         {activeTab === 'properties' && <PropertiesUI />}
-         {/* κλπ... */}
-      </main>
-    </div>
-  );
-}; // Τέλος του Admin component
-  if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
-
-  // --- ΑΠΟ ΕΔΩ ΚΑΙ ΚΑΤΩ ΞΕΚΙΝΑΕΙ ΤΟ UI ΣΟΥ (ΤΟ return () ΠΟΥ ΗΔΗ ΕΧΕΙΣ) ---
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
          <div className="flex flex-col items-center gap-4">
             <Loader2 size={40} className="text-slate-900 animate-spin" />
             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Loading Dashboard...</p>
